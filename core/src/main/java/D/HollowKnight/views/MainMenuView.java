@@ -1,15 +1,18 @@
 package D.HollowKnight.views;
 
-import D.HollowKnight.Main;
+import D.HollowKnight.controllers.GameController;
+import D.HollowKnight.controllers.MenuController;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
@@ -20,7 +23,7 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 
 public class MainMenuView implements Screen {
-    private Main mainGame;
+    private GameController mainGame;
     private Stage stage;
     private Texture background;
     private BitmapFont font;
@@ -32,7 +35,7 @@ public class MainMenuView implements Screen {
     private Image mainBg;
     private Image settingsBg;
 
-    public MainMenuView(Main mainGame) {
+    public MainMenuView(GameController mainGame) {
         this.mainGame = mainGame;
         stage = new Stage(new FitViewport(1280, 720));
         Gdx.input.setInputProcessor(stage);
@@ -76,8 +79,26 @@ public class MainMenuView implements Screen {
         mainTable.add(quitBtn).padLeft(45).row();
 
 
-        settingsTable = new SettingsTable(style, mainTable , settingsBg);
-        startGameTable = new StartGameTable(style, mainTable, settingsBg);
+        MenuController controller = new MenuController(mainGame);
+
+        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+        pixmap.setColor(Color.BLACK);
+        pixmap.fill();
+        Image darknessLayer = new Image(new Texture(pixmap));
+        pixmap.dispose();
+
+        darknessLayer.setFillParent(true);
+        darknessLayer.setTouchable(Touchable.disabled);
+        int initialBrightness = controller.getBrightness();
+        darknessLayer.getColor().a = 1f - (initialBrightness / 100f);
+
+        settingsTable = new SettingsTable(style, mainTable, settingsBg, controller, darknessLayer);
+        startGameTable = new StartGameTable(style, mainTable, settingsBg, controller);
+        ControlsTable controlsTable = new ControlsTable(style, settingsTable, controller);
+        settingsTable.setControlsTable(controlsTable);
+
+        MapSelectionTable mapSelectionTable = new MapSelectionTable(style, startGameTable, controller);
+        startGameTable.setMapSelectionTable(mapSelectionTable);
 
         settingsBtn.addListener(new ClickListener() {
             @Override
@@ -104,9 +125,13 @@ public class MainMenuView implements Screen {
             }
         });
 
+
         stage.addActor(mainTable);
         stage.addActor(settingsTable);
+        stage.addActor(controlsTable);
         stage.addActor(startGameTable);
+        stage.addActor(mapSelectionTable);
+        stage.addActor(darknessLayer);
     }
 
     @Override
@@ -118,6 +143,6 @@ public class MainMenuView implements Screen {
 
     @Override public void resize(int w, int h) { stage.getViewport().update(w, h, true); }
     @Override public void dispose() { stage.dispose(); background.dispose(); font.dispose(); }
-    @Override public void show() {} @Override public void hide() {}
+    @Override public void show() {} @Override public void hide() {stage.getRoot().clear();}
     @Override public void pause() {} @Override public void resume() {}
 }
