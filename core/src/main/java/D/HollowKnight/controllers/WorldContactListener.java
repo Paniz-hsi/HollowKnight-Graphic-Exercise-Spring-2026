@@ -24,6 +24,20 @@ public class WorldContactListener implements ContactListener {
                 player.triggerPogoJump();
             }
         }
+
+        if (isSensorMatch(fixA, fixB, "player", "enemy") || isSensorMatch(fixA, fixB, "player", "spikes")) {
+            Player player = getPlayerFromFixture(fixA, fixB, "player");
+            if (player != null) {
+                player.takeDamage();
+            }
+        }
+
+        if (isSensorMatch(fixA, fixB, "attack", "enemy")) {
+            Player player = getPlayerFromFixture(fixA, fixB, "attack");
+            if (player != null) {
+                player.gainSoul();
+            }
+        }
     }
 
     @Override

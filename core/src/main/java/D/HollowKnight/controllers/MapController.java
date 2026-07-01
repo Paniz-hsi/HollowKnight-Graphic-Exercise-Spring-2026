@@ -2,6 +2,7 @@ package D.HollowKnight.controllers;
 
 import D.HollowKnight.models.MapModel;
 import D.HollowKnight.models.Player; // اضافه شد
+import D.HollowKnight.views.GameUI;
 import D.HollowKnight.views.MapView;
 import D.HollowKnight.views.PlayerView;
 import com.badlogic.gdx.Gdx;
@@ -33,10 +34,10 @@ public class MapController implements Screen {
     private MapModel model;
     private MapView view;
 
-    // متغیرهای جدید برای بازیکن و کنترلر
     private SpriteBatch batch;
     private Player player;
     private MenuController menuController;
+    private GameUI gameUI;
 
     public MapController(GameController mainGame , String mapPath) {
         this.mainGame = mainGame;
@@ -67,6 +68,7 @@ public class MapController implements Screen {
 
             player = new Player(startX, startY, world);
             playerView = new PlayerView();
+            gameUI = new GameUI();
         } else {
             System.err.println("Error: File not found " + mapPath);
         }
@@ -98,12 +100,18 @@ public class MapController implements Screen {
         }
 
         b2dr.render(world, camera.combined);
+        if (player != null) {
+            gameUI.render(player);
+        }
     }
 
     @Override
     public void resize(int width, int height) {
         if (viewport != null) {
             viewport.update(width, height);
+        }
+        if (gameUI != null) {
+            gameUI.resize(width, height);
         }
     }
 
@@ -124,5 +132,6 @@ public class MapController implements Screen {
         if (b2dr != null) b2dr.dispose();
         if (batch != null) batch.dispose();
         if (playerView != null) playerView.dispose();
+        if (gameUI != null) gameUI.dispose();
     }
 }

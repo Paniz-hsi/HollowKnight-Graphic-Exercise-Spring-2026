@@ -36,6 +36,20 @@ public class Player {
     private float landingTimer = 0;
     private final float LANDING_DURATION = 0.12f;
 
+    public int maxMasks = 5;
+    public int currentMasks = 5;
+    public int soul = 0;
+    public final int MAX_SOUL = 99;
+
+    public boolean isInvincible = false;
+    public float invincibilityTimer = 0f;
+    public final float INVINCIBILITY_DURATION = 1.0f;
+
+    public boolean isFocusing = false;
+    public float focusTimer = 0f;
+    public final float FOCUS_DURATION = 1.5f;
+    public final int FOCUS_SOUL_COST = 33; // معمولا در هالونایت یک سوم مخزن است
+
     public Player(float startX, float startY, World world) {
         currentState = State.IDLE;
         previousState = State.IDLE;
@@ -85,6 +99,28 @@ public class Player {
         if (dashCooldown > 0) dashCooldown -= delta;
         if (attackTimer > 0) attackTimer -= delta;
         if (landingTimer > 0) landingTimer -= delta;
+        if (isInvincible) {
+            invincibilityTimer -= delta;
+            if (invincibilityTimer <= 0) {
+                isInvincible = false;
+            }
+        }
+
+        if (Gdx.input.isKeyPressed(com.badlogic.gdx.Input.Keys.A) && isOnGround() && currentState == State.IDLE) {
+            if (soul >= FOCUS_SOUL_COST && currentMasks < maxMasks) {
+                isFocusing = true;
+                focusTimer += delta;
+
+                if (focusTimer >= FOCUS_DURATION) {
+                    currentMasks++;
+                    soul -= FOCUS_SOUL_COST;
+                    focusTimer = 0;
+                }
+            }
+        } else {
+            isFocusing = false;
+            focusTimer = 0;
+        }
 
         if (isOnGround() && previousState == State.FALLING) {
             landingTimer = LANDING_DURATION;
@@ -220,4 +256,21 @@ public class Player {
     public float getY() { return body.getPosition().y; }
     public float getWidth() { return hitBoxWidth; }
     public float getHeight() { return hitBoxHeight; }
+    public void takeDamage() {
+        if (isInvincible) return;
+        currentMasks--;
+        isInvincible = true;
+        invincibilityTimer = INVINCIBILITY_DURATION;
+        isFocusing = false;
+        focusTimer = 0;
+
+        if (currentMasks <= 0) {
+            body.setTransform(2f, 1f, 0);
+            currentMasks = maxMasks;
+        }
+    }
+
+    public void gainSoul() {
+        soul = Math.min(soul + 11, MAX_SOUL);
+    }
 }
