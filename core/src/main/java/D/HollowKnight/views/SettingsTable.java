@@ -138,9 +138,19 @@ public class SettingsTable extends Table {
 
         backBtn.addListener(new ClickListener() {
             @Override public void clicked(InputEvent event, float x, float y) {
-                SettingsTable.this.addAction(Actions.moveTo(1280, 0, 0.5f, Interpolation.exp10Out));
-                mainTable.addAction(Actions.moveTo(0, 0, 0.5f, Interpolation.exp10Out));
-                settingsBg.addAction(Actions.fadeOut(0.5f));
+                if (mainTable != null) {
+                    mainTable.setVisible(true);
+                    mainTable.addAction(Actions.moveTo(0, 0, 0.5f, Interpolation.exp10Out));
+                }
+
+                SettingsTable.this.addAction(Actions.sequence(
+                    Actions.moveTo(1280, 0, 0.5f, Interpolation.exp10Out),
+                    Actions.visible(false)
+                ));
+
+                if (settingsBg != null) {
+                    settingsBg.addAction(Actions.fadeOut(0.5f));
+                }
             }
         });
     }

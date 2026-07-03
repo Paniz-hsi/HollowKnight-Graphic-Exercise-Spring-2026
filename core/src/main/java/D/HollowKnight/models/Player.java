@@ -4,6 +4,9 @@ import D.HollowKnight.controllers.MenuController;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.physics.box2d.*;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class Player {
     public enum State {
         IDLE, RUNNING, RUN_TO_IDLE, AIRBORNE, FALLING, LANDING,
@@ -49,6 +52,8 @@ public class Player {
     public float focusTimer = 0f;
     public final float FOCUS_DURATION = 1.5f;
     public final int FOCUS_SOUL_COST = 33; // معمولا در هالونایت یک سوم مخزن است
+    private int currentSpawnPointId = 1;
+    private Set<Integer> unlockedSpawns = new HashSet<>();
 
     public Player(float startX, float startY, World world) {
         currentState = State.IDLE;
@@ -70,8 +75,6 @@ public class Player {
 
         body.createFixture(fdef).setUserData("player");
         shape.dispose();
-
-        body.createFixture(fdef).setUserData("player");
 
         body.setUserData(this);
 
@@ -272,5 +275,39 @@ public class Player {
 
     public void gainSoul() {
         soul = Math.min(soul + 11, MAX_SOUL);
+    }
+
+    public void activateCheckpoint(int spawnId) {
+        this.currentSpawnPointId = spawnId;
+        this.unlockedSpawns.add(spawnId);
+    }
+
+    public int getCurrentSpawnPointId() {
+        return currentSpawnPointId;
+    }
+
+    public int getProgressPercentage() {
+        return Math.min(this.unlockedSpawns.size() * 20, 100);
+    }
+
+    public String getUnlockedSpawnsString() {
+        StringBuilder sb = new StringBuilder();
+        for (Integer id : unlockedSpawns) {
+            sb.append(id).append(",");
+        }
+        if (sb.length() > 0) {
+            sb.setLength(sb.length() - 1); // حذف آخرین کاما
+        }
+        return sb.toString();
+    }
+
+    public void loadUnlockedSpawns(String data) {
+        unlockedSpawns.clear();
+        if (data != null && !data.isEmpty()) {
+            String[] parts = data.split(",");
+            for (String part : parts) {
+                unlockedSpawns.add(Integer.parseInt(part.trim()));
+            }
+        }
     }
 }

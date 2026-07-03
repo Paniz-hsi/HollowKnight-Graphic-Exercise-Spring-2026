@@ -12,6 +12,15 @@ public class MenuController {
     private GameController mainGame;
     private Music bgMusic;
     private DatabaseManager db;
+    private int currentSlot = 1;
+
+    public void setCurrentSlot(int slot) {
+        this.currentSlot = slot;
+    }
+
+    public int getCurrentSlot() {
+        return currentSlot;
+    }
 
     public MenuController(GameController mainGame) {
         this.mainGame = mainGame;
@@ -167,4 +176,6 @@ public class MenuController {
     public void setKeyJump(int keycode) {
         db.updateKeyJump(keycode);
     }
+
+    public DatabaseManager getDatabase() { return db;}
 }

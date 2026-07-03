@@ -56,7 +56,6 @@ public class GameUI {
         Texture introHBSheet = new Texture("HealthBar.png");
         int introFrameWidth = introHBSheet.getWidth() / 6;
         TextureRegion[][] introTmp = TextureRegion.split(introHBSheet, introFrameWidth, introHBSheet.getHeight());
-        // سرعت انیمیشن شروع رو کمی کندتر کردم تا قشنگ‌تر دیده بشه (0.15 ثانیه برای هر فریم)
         introHealthBarAnim = new Animation<>(0.15f, introTmp[0]);
 
         Texture breakSheet = new Texture("BreakHealth.png");

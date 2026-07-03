@@ -38,6 +38,15 @@ public class WorldContactListener implements ContactListener {
                 player.gainSoul();
             }
         }
+        if (isCheckpointContact(fixA, fixB)) {
+            Player player = getPlayerFromFixture(fixA, fixB, "player");
+            int checkpointId = extractCheckpointId(fixA, fixB);
+
+            if (player != null && checkpointId != -1) {
+                player.activateCheckpoint(checkpointId);
+                System.out.println("Checkpoint " + checkpointId + " activated! Progress: " + player.getProgressPercentage() + "%");
+            }
+        }
     }
 
     @Override
@@ -76,5 +85,34 @@ public class WorldContactListener implements ContactListener {
             return (Player) fixB.getBody().getUserData();
         }
         return null;
+    }
+    private boolean isCheckpointContact(Fixture fixA, Fixture fixB) {
+        if (fixA.getUserData() == null || fixB.getUserData() == null) return false;
+        String dataA = fixA.getUserData().toString();
+        String dataB = fixB.getUserData().toString();
+
+        return (dataA.equals("player") && dataB.startsWith("checkpoint_")) ||
+            (dataB.equals("player") && dataA.startsWith("checkpoint_"));
+    }
+
+    private int extractCheckpointId(Fixture fixA, Fixture fixB) {
+        String data = "";
+        if (fixA.getUserData() != null && fixA.getUserData().toString().startsWith("checkpoint_")) {
+            data = fixA.getUserData().toString();
+        } else if (fixB.getUserData() != null && fixB.getUserData().toString().startsWith("checkpoint_")) {
+            data = fixB.getUserData().toString();
+        }
+
+        if (!data.isEmpty()) {
+            try {
+                String[] parts = data.split("_");
+                if (parts.length > 1) {
+                    return Integer.parseInt(parts[1]);
+                }
+            } catch (NumberFormatException e) {
+                System.err.println("Error parsing checkpoint ID from: " + data);
+            }
+        }
+        return -1;
     }
 }

@@ -72,11 +72,32 @@ public class MapModel {
 
         if (map.getLayers().get("spawns") != null) {
             for (MapObject object : map.getLayers().get("spawns").getObjects().getByType(PointMapObject.class)) {
-                float x = ((PointMapObject) object).getPoint().x / PPM;
-                float y = ((PointMapObject) object).getPoint().y / PPM;
-                int id = object.getProperties().get("id", Integer.class);
+                float rawX = ((PointMapObject) object).getPoint().x;
+                float rawY = ((PointMapObject) object).getPoint().y;
+
+                float x = rawX / PPM;
+                float y = rawY / PPM;
+
+                int id = 1;
+                if (object.getProperties().containsKey("id")) {
+                    Object idProp = object.getProperties().get("id");
+                    if (idProp instanceof Integer) {
+                        id = (Integer) idProp;
+                    } else if (idProp instanceof String) {
+                        id = Integer.parseInt((String) idProp);
+                    }
+                }
+
                 spawnPoints.put(id, new Vector2(x, y));
                 System.out.println("Spawn point ID: " + id + " loaded at X:" + x + " Y:" + y);
+                float sensorSize = 40f;
+                Rectangle sensorRect = new Rectangle(
+                    rawX - (sensorSize / 2),
+                    rawY - (sensorSize / 2),
+                    sensorSize,
+                    sensorSize
+                );
+                createStaticBody(sensorRect, true, "checkpoint_" + id);
             }
         }
     }

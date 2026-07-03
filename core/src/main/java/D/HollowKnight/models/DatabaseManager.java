@@ -24,7 +24,8 @@ public class DatabaseManager {
 
             stmt.execute("CREATE TABLE IF NOT EXISTS saves (" +
                 "slot INTEGER PRIMARY KEY, has_save BOOLEAN, " +
-                "map_name TEXT, progress INTEGER)");
+                "map_name TEXT, progress INTEGER, spawn_point INTEGER, " +
+                "current_masks INTEGER, max_masks INTEGER, soul INTEGER, unlocked_spawns TEXT)");
         }
 
         try (Statement stmt = conn.createStatement();
@@ -43,7 +44,8 @@ public class DatabaseManager {
              ResultSet rsSaves = stmt.executeQuery("SELECT COUNT(*) FROM saves")) {
 
             if (rsSaves.next() && rsSaves.getInt(1) == 0) {
-                try (PreparedStatement pstmt = conn.prepareStatement("INSERT INTO saves (slot, has_save, map_name, progress) VALUES (?, 0, 'UNKNOWN', 0)")) {
+                String insertQuery = "INSERT INTO saves (slot, has_save, map_name, progress, spawn_point, current_masks, max_masks, soul, unlocked_spawns) VALUES (?, 0, 'UNKNOWN', 0, 1, 5, 5, 0, '1')";
+                try (PreparedStatement pstmt = conn.prepareStatement(insertQuery)) {
                     for (int i = 1; i <= 4; i++) {
                         pstmt.setInt(1, i);
                         pstmt.executeUpdate();
@@ -234,5 +236,67 @@ public class DatabaseManager {
         try (PreparedStatement pstmt = conn.prepareStatement("UPDATE settings SET key_jump = ? WHERE id = 1")) {
             pstmt.setInt(1, keycode); pstmt.executeUpdate();
         } catch (SQLException e) { e.printStackTrace(); }
+    }
+
+    public void saveGameState(int slot, String mapName, int spawnPointId, int progress, String unlockedSpawnsStr, int currentMasks, int maxMasks, int soul) {
+        String sql = "UPDATE saves SET has_save = 1, map_name = ?, progress = ?, spawn_point = ?, unlocked_spawns = ?, current_masks = ?, max_masks = ?, soul = ? WHERE slot = ?";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, mapName);
+            pstmt.setInt(2, progress);
+            pstmt.setInt(3, spawnPointId);
+            pstmt.setString(4, unlockedSpawnsStr);
+            pstmt.setInt(5, currentMasks);
+            pstmt.setInt(6, maxMasks);
+            pstmt.setInt(7, soul);
+            pstmt.setInt(8, slot);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public String getSavedUnlockedSpawns(int slot) {
+        try (PreparedStatement pstmt = conn.prepareStatement("SELECT unlocked_spawns FROM saves WHERE slot = ?")) {
+            pstmt.setInt(1, slot);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) return rs.getString("unlocked_spawns");
+        } catch (SQLException e) { e.printStackTrace(); }
+        return "1";
+    }
+
+    public int getSavedSpawnPoint(int slot) {
+        try (PreparedStatement pstmt = conn.prepareStatement("SELECT spawn_point FROM saves WHERE slot = ?")) {
+            pstmt.setInt(1, slot);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) return rs.getInt("spawn_point");
+        } catch (SQLException e) { e.printStackTrace(); }
+        return 1;
+    }
+
+    public int getSaveProgress(int slot) {
+        try (PreparedStatement pstmt = conn.prepareStatement("SELECT progress FROM saves WHERE slot = ?")) {
+            pstmt.setInt(1, slot);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) return rs.getInt("progress");
+        } catch (SQLException e) { e.printStackTrace(); }
+        return 0;
+    }
+
+    public int getSavedMasks(int slot) {
+        try (PreparedStatement pstmt = conn.prepareStatement("SELECT current_masks FROM saves WHERE slot = ?")) {
+            pstmt.setInt(1, slot);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) return rs.getInt("current_masks");
+        } catch (SQLException e) { e.printStackTrace(); }
+        return 5;
+    }
+
+    public int getSavedSoul(int slot) {
+        try (PreparedStatement pstmt = conn.prepareStatement("SELECT soul FROM saves WHERE slot = ?")) {
+            pstmt.setInt(1, slot);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) return rs.getInt("soul");
+        } catch (SQLException e) { e.printStackTrace(); }
+        return 0;
     }
 }
