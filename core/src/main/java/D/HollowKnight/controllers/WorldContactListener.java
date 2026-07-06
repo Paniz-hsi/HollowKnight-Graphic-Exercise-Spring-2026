@@ -1,6 +1,8 @@
 package D.HollowKnight.controllers;
 
 import D.HollowKnight.models.Crawlid;
+import D.HollowKnight.models.HuskHornhead;
+import D.HollowKnight.models.Mossfly;
 import D.HollowKnight.models.Player;
 import com.badlogic.gdx.physics.box2d.*;
 
@@ -29,40 +31,6 @@ public class WorldContactListener implements ContactListener {
             if (c != null) c.rightEdgeContacts++;
         }
 
-        if (isSensorMatch(fixA, fixB, "downAttack", "enemy") || isSensorMatch(fixA, fixB, "downAttack", "hazard")) {
-            Player player = getPlayerFromFixture(fixA, fixB, "downAttack");
-            if (player != null) {
-                player.triggerPogoJump();
-            }
-        }
-
-        if (isSensorMatch(fixA, fixB, "player", "enemy")) {
-            Player p = getPlayerFromFixture(fixA, fixB, "player");
-            if (p != null) p.takeDamage();
-        }
-
-        if (isSensorMatch(fixA, fixB, "player", "enemy") || isSensorMatch(fixA, fixB, "player", "hazard")) {
-            Player player = getPlayerFromFixture(fixA, fixB, "player");
-            if (player != null) {
-                player.takeDamage();
-            }
-        }
-        if (isSensorMatch(fixA, fixB, "attack", "enemy")) {
-            Fixture enemyFix = fixA.getUserData().equals("enemy") ? fixA : fixB;
-
-            if (enemyFix.getBody().getUserData() instanceof D.HollowKnight.models.Crawlid) {
-                D.HollowKnight.models.Crawlid crawlid = (D.HollowKnight.models.Crawlid) enemyFix.getBody().getUserData();
-                crawlid.takeDamage();
-            }
-            else if (enemyFix.getBody().getUserData() instanceof D.HollowKnight.models.Mossfly) {
-                D.HollowKnight.models.Mossfly mossfly = (D.HollowKnight.models.Mossfly) enemyFix.getBody().getUserData();
-                mossfly.takeDamage();
-            }
-
-            Player p = getPlayerFromFixture(fixA, fixB, "attack");
-            if (p != null) p.gainSoul();
-        }
-
         if (isSensorMatch(fixA, fixB, "enemy_wall_sensor", "ground") ||
             isSensorMatch(fixA, fixB, "enemy_wall_sensor", "wall") ||
             isSensorMatch(fixA, fixB, "enemy_wall_sensor", "hazard")) {
@@ -73,12 +41,59 @@ public class WorldContactListener implements ContactListener {
             }
         }
 
+        if (isSensorMatch(fixA, fixB, "hornhead_left", "ground") || isSensorMatch(fixA, fixB, "hornhead_left", "platform")) {
+            HuskHornhead h = getHuskHornheadFromFixture(fixA, fixB, "hornhead_left");
+            if (h != null) h.leftEdgeContacts++;
+        }
+        if (isSensorMatch(fixA, fixB, "hornhead_right", "ground") || isSensorMatch(fixA, fixB, "hornhead_right", "platform")) {
+            HuskHornhead h = getHuskHornheadFromFixture(fixA, fixB, "hornhead_right");
+            if (h != null) h.rightEdgeContacts++;
+        }
+        if (isSensorMatch(fixA, fixB, "player", "enemy") || isSensorMatch(fixA, fixB, "player", "hazard")) {
+            Player p = getPlayerFromFixture(fixA, fixB, "player");
+            if (p != null) p.takeDamage();
+        }
+
         if (isSensorMatch(fixA, fixB, "attack", "enemy")) {
-            Player player = getPlayerFromFixture(fixA, fixB, "attack");
-            if (player != null) {
-                player.gainSoul();
+            Fixture enemyFix = fixA.getUserData().equals("enemy") ? fixA : fixB;
+
+            if (enemyFix.getBody().getUserData() instanceof Crawlid) {
+                ((Crawlid) enemyFix.getBody().getUserData()).takeDamage();
+            }
+            else if (enemyFix.getBody().getUserData() instanceof Mossfly) {
+                ((Mossfly) enemyFix.getBody().getUserData()).takeDamage();
+            }
+            else if (enemyFix.getBody().getUserData() instanceof HuskHornhead) {
+                ((HuskHornhead) enemyFix.getBody().getUserData()).takeDamage();
+            }
+
+            Player p = getPlayerFromFixture(fixA, fixB, "attack");
+            if (p != null) p.gainSoul();
+        }
+
+        if (isSensorMatch(fixA, fixB, "downAttack", "enemy")) {
+            Fixture enemyFix = fixA.getUserData().equals("enemy") ? fixA : fixB;
+
+            if (enemyFix.getBody().getUserData() instanceof Crawlid) {
+                ((Crawlid) enemyFix.getBody().getUserData()).takeDamage();
+            } else if (enemyFix.getBody().getUserData() instanceof Mossfly) {
+                ((Mossfly) enemyFix.getBody().getUserData()).takeDamage();
+            } else if (enemyFix.getBody().getUserData() instanceof HuskHornhead) {
+                ((HuskHornhead) enemyFix.getBody().getUserData()).takeDamage();
+            }
+
+            Player p = getPlayerFromFixture(fixA, fixB, "downAttack");
+            if (p != null) {
+                p.gainSoul();
+                p.triggerPogoJump();
             }
         }
+
+        if (isSensorMatch(fixA, fixB, "downAttack", "hazard")) {
+            Player p = getPlayerFromFixture(fixA, fixB, "downAttack");
+            if (p != null) p.triggerPogoJump();
+        }
+
         if (isCheckpointContact(fixA, fixB)) {
             Player player = getPlayerFromFixture(fixA, fixB, "player");
             int checkpointId = extractCheckpointId(fixA, fixB);
@@ -112,6 +127,15 @@ public class WorldContactListener implements ContactListener {
             Crawlid c = getCrawlidFromFixture(fixA, fixB, "edge_right");
             if (c != null) c.rightEdgeContacts--;
         }
+
+        if (isSensorMatch(fixA, fixB, "hornhead_left", "ground") || isSensorMatch(fixA, fixB, "hornhead_left", "platform")) {
+            HuskHornhead h = getHuskHornheadFromFixture(fixA, fixB, "hornhead_left");
+            if (h != null) h.leftEdgeContacts--;
+        }
+        if (isSensorMatch(fixA, fixB, "hornhead_right", "ground") || isSensorMatch(fixA, fixB, "hornhead_right", "platform")) {
+            HuskHornhead h = getHuskHornheadFromFixture(fixA, fixB, "hornhead_right");
+            if (h != null) h.rightEdgeContacts--;
+        }
     }
 
     @Override
@@ -137,6 +161,7 @@ public class WorldContactListener implements ContactListener {
         }
         return null;
     }
+
     private boolean isCheckpointContact(Fixture fixA, Fixture fixB) {
         if (fixA.getUserData() == null || fixB.getUserData() == null) return false;
         String dataA = fixA.getUserData().toString();
@@ -172,6 +197,15 @@ public class WorldContactListener implements ContactListener {
             return (Crawlid) fixA.getBody().getUserData();
         } else if (fixB.getUserData() != null && fixB.getUserData().equals(target) && fixB.getBody().getUserData() instanceof Crawlid) {
             return (Crawlid) fixB.getBody().getUserData();
+        }
+        return null;
+    }
+
+    private HuskHornhead getHuskHornheadFromFixture(Fixture fixA, Fixture fixB, String target) {
+        if (fixA.getUserData() != null && fixA.getUserData().equals(target) && fixA.getBody().getUserData() instanceof HuskHornhead) {
+            return (HuskHornhead) fixA.getBody().getUserData();
+        } else if (fixB.getUserData() != null && fixB.getUserData().equals(target) && fixB.getBody().getUserData() instanceof HuskHornhead) {
+            return (HuskHornhead) fixB.getBody().getUserData();
         }
         return null;
     }

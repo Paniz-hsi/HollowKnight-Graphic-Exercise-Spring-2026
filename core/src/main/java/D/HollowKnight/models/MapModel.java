@@ -164,4 +164,16 @@ public class MapModel {
     public Vector2 getMossflySpawn() {
         return mossflySpawn;
     }
+
+    public Vector2 getHuskSpawn() {
+        return huskSpawn;
+    }
+
+    public Vector2 getCrystallizedSpawn() {
+        return crystallizedSpawn;
+    }
+
+    public Vector2 getFalseKnightSpawn() {
+        return falseKnightSpawn;
+    }
 }

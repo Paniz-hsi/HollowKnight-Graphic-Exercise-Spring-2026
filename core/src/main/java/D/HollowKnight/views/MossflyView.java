@@ -1,10 +1,10 @@
 package D.HollowKnight.views;
 
 import D.HollowKnight.models.Mossfly;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 
 public class MossflyView {
     private Animation<TextureRegion> shakeAnim;
@@ -14,33 +14,17 @@ public class MossflyView {
     private Animation<TextureRegion> deathAirAnim;
     private Animation<TextureRegion> deathLandAnim;
 
-    private Texture shakeTex, appearTex, flyTex, turnTex, deathAirTex, deathLandTex;
+    private TextureAtlas atlas;
 
     public MossflyView() {
-        shakeTex = new Texture("Shake.png");
-        appearTex = new Texture("Appear.png");
-        flyTex = new Texture("Fly.png");
-        turnTex = new Texture("TurnToFly.png");
-        deathAirTex = new Texture("Death Air Moss.png");
-        deathLandTex = new Texture("Death Land Moss.png");
+        atlas = new TextureAtlas("knight_animations.atlas");
 
-        shakeAnim = new Animation<>(0.15f, TextureRegion.split(shakeTex, shakeTex.getWidth() / 3, shakeTex.getHeight())[0]);
-        shakeAnim.setPlayMode(Animation.PlayMode.LOOP);
-
-        appearAnim = new Animation<>(0.1f, TextureRegion.split(appearTex, appearTex.getWidth() / 5, appearTex.getHeight())[0]);
-        appearAnim.setPlayMode(Animation.PlayMode.NORMAL);
-
-        flyAnim = new Animation<>(0.08f, TextureRegion.split(flyTex, flyTex.getWidth() / 4, flyTex.getHeight())[0]);
-        flyAnim.setPlayMode(Animation.PlayMode.LOOP);
-
-        turnAnim = new Animation<>(0.1f, TextureRegion.split(turnTex, turnTex.getWidth() / 3, turnTex.getHeight())[0]);
-        turnAnim.setPlayMode(Animation.PlayMode.NORMAL);
-
-        deathAirAnim = new Animation<>(0.1f, TextureRegion.split(deathAirTex, deathAirTex.getWidth() / 4, deathAirTex.getHeight())[0]);
-        deathAirAnim.setPlayMode(Animation.PlayMode.LOOP);
-
-        deathLandAnim = new Animation<>(0.1f, TextureRegion.split(deathLandTex, deathLandTex.getWidth() / 2, deathLandTex.getHeight())[0]);
-        deathLandAnim.setPlayMode(Animation.PlayMode.NORMAL);
+        shakeAnim = new Animation<>(0.15f, atlas.findRegions("Shake"), Animation.PlayMode.LOOP);
+        appearAnim = new Animation<>(0.1f, atlas.findRegions("Appear"), Animation.PlayMode.NORMAL);
+        flyAnim = new Animation<>(0.08f, atlas.findRegions("Fly"), Animation.PlayMode.LOOP);
+        turnAnim = new Animation<>(0.1f, atlas.findRegions("TurnToFly"), Animation.PlayMode.NORMAL);
+        deathAirAnim = new Animation<>(0.1f, atlas.findRegions("Death Air"), Animation.PlayMode.LOOP);
+        deathLandAnim = new Animation<>(0.1f, atlas.findRegions("Death Land Moss"), Animation.PlayMode.NORMAL);
     }
 
     public void render(SpriteBatch batch, Mossfly mossfly) {
@@ -93,7 +77,8 @@ public class MossflyView {
     }
 
     public void dispose() {
-        shakeTex.dispose(); appearTex.dispose(); flyTex.dispose();
-        turnTex.dispose(); deathAirTex.dispose(); deathLandTex.dispose();
+        if (atlas != null) {
+            atlas.dispose();
+        }
     }
 }

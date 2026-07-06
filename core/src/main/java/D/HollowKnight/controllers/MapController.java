@@ -42,6 +42,8 @@ public class MapController implements Screen {
     private CrawlidView crawlidView;
     private MossflyView mossflyView;
     private Mossfly mossfly;
+    private HuskHornhead husk;
+    private HuskHornheadView huskView;
     private MenuController menuController;
     private GameUI gameUI;
     private boolean isPaused = false;
@@ -90,6 +92,12 @@ public class MapController implements Screen {
             if (enemyPos != null) {
                 mossfly = new Mossfly(world, enemyPos.x, enemyPos.y);
             }
+
+            huskView = new HuskHornheadView();
+            enemyPos = model.getHuskSpawn();
+            if (enemyPos != null) {
+                husk = new HuskHornhead(world, enemyPos.x, enemyPos.y);
+            }
             player.loadUnlockedSpawns(db.getSavedUnlockedSpawns(activeSlot));
             player.activateCheckpoint(savedSpawnId);
             player.currentMasks = db.getSavedMasks(activeSlot);
@@ -135,12 +143,14 @@ public class MapController implements Screen {
                 camera.position.x = player.getX();
                 camera.position.y = player.getY();
             }
-            // --- آپدیت انمی ---
             if (crawlid != null) {
                 crawlid.update(delta);
             }
             if (mossfly != null) {
                 mossfly.update(delta, player);
+            }
+            if (husk != null) {
+                husk.update(delta, player);
             }
             camera.update();
         }
@@ -161,6 +171,9 @@ public class MapController implements Screen {
             }
             if (mossfly != null && mossflyView != null) {
                 mossflyView.render(batch, mossfly);
+            }
+            if (husk != null && huskView != null) {
+                huskView.render(batch, husk);
             }
             playerView.render(batch, player);
             batch.end();
