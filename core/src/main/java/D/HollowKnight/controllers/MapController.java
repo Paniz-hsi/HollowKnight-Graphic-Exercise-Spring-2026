@@ -1,12 +1,7 @@
 package D.HollowKnight.controllers;
 
-import D.HollowKnight.models.DatabaseManager;
-import D.HollowKnight.models.MapModel;
-import D.HollowKnight.models.Player;
-import D.HollowKnight.views.GameUI;
-import D.HollowKnight.views.MapView;
-import D.HollowKnight.views.PauseMenuView;
-import D.HollowKnight.views.PlayerView;
+import D.HollowKnight.models.*;
+import D.HollowKnight.views.*;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
@@ -30,6 +25,7 @@ public class MapController implements Screen {
     private OrthographicCamera camera;
     private Viewport viewport;
     private PlayerView playerView;
+    private BeeParticleSystem beeParticles;
 
     private TmxMapLoader mapLoader;
     private TiledMap map;
@@ -42,6 +38,10 @@ public class MapController implements Screen {
 
     private SpriteBatch batch;
     private Player player;
+    private Crawlid crawlid;
+    private CrawlidView crawlidView;
+    private MossflyView mossflyView;
+    private Mossfly mossfly;
     private MenuController menuController;
     private GameUI gameUI;
     private boolean isPaused = false;
@@ -79,6 +79,17 @@ public class MapController implements Screen {
             camera.position.set(startX, startY, 0);
 
             player = new Player(startX, startY, world);
+            crawlidView = new CrawlidView();
+            Vector2 enemyPos = model.getCrawlidSpawn();
+            if (enemyPos != null) {
+                crawlid = new Crawlid(world, enemyPos.x, enemyPos.y);
+            }
+
+            mossflyView = new MossflyView();
+            enemyPos = model.getMossflySpawn();
+            if (enemyPos != null) {
+                mossfly = new Mossfly(world, enemyPos.x, enemyPos.y);
+            }
             player.loadUnlockedSpawns(db.getSavedUnlockedSpawns(activeSlot));
             player.activateCheckpoint(savedSpawnId);
             player.currentMasks = db.getSavedMasks(activeSlot);
@@ -90,13 +101,13 @@ public class MapController implements Screen {
             param.size = 30;
             BitmapFont font = gen.generateFont(param);
             gen.dispose();
-
+            beeParticles = new BeeParticleSystem(8, camera.position.x, camera.position.y);
             TextButton.TextButtonStyle style = new TextButton.TextButtonStyle();
             style.font = font;
             style.fontColor = Color.WHITE;
             style.overFontColor = Color.YELLOW;
             pauseMenuView = new PauseMenuView(this, mainGame, menuController, style);
-            gameUI = new GameUI();
+            gameUI = new GameUI(mainGame , menuController , style);
         } else {
             System.err.println("Error: File not found " + mapPath);
         }
@@ -112,10 +123,24 @@ public class MapController implements Screen {
 
         if (!isPaused) {
             if (world != null) world.step(1/60f, 6, 2);
+            if (player != null && player.needsRespawn()) {
+                Vector2 spawnPos = model.getSpawnPoint(player.getCurrentSpawnPointId());
+                if (spawnPos != null) {
+                    player.respawnAt(spawnPos);
+                }
+                player.setNeedsRespawn(false);
+            }
             if (player != null) {
                 player.update(delta, menuController);
                 camera.position.x = player.getX();
                 camera.position.y = player.getY();
+            }
+            // --- آپدیت انمی ---
+            if (crawlid != null) {
+                crawlid.update(delta);
+            }
+            if (mossfly != null) {
+                mossfly.update(delta, player);
             }
             camera.update();
         }
@@ -128,6 +153,15 @@ public class MapController implements Screen {
         if (player != null && playerView != null) {
             batch.setProjectionMatrix(camera.combined);
             batch.begin();
+            if (beeParticles != null) {
+                beeParticles.render(batch, delta, camera);
+            }
+            if (crawlid != null && crawlidView != null) {
+                crawlidView.render(batch, crawlid);
+            }
+            if (mossfly != null && mossflyView != null) {
+                mossflyView.render(batch, mossfly);
+            }
             playerView.render(batch, player);
             batch.end();
         }
@@ -168,6 +202,8 @@ public class MapController implements Screen {
         if (playerView != null) playerView.dispose();
         if (gameUI != null) gameUI.dispose();
         if (pauseMenuView != null) pauseMenuView.dispose();
+        if (crawlidView != null) crawlidView.dispose();
+        if (beeParticles != null) beeParticles.dispose();
     }
 
     public void pauseGame() {

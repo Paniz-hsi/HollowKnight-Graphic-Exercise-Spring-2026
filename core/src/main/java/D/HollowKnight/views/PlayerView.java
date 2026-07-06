@@ -2,6 +2,7 @@ package D.HollowKnight.views;
 
 import D.HollowKnight.models.Player;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
@@ -27,6 +28,7 @@ public class PlayerView {
     private Animation<TextureRegion> slashEffectAnim;
     private Animation<TextureRegion> upSlashEffectAnim;
     private Animation<TextureRegion> downSlashEffectAnim;
+    private Animation<TextureRegion> deathAnim;
 
     private TextureRegion fallbackFrame;
 
@@ -47,6 +49,7 @@ public class PlayerView {
         slashAnim = createAnim("SlashAlt", 0.06f, Animation.PlayMode.NORMAL);
         upSlashAnim = createAnim("UpSlash", 0.06f, Animation.PlayMode.NORMAL);
         downSlashAnim = createAnim("DownSlash", 0.06f, Animation.PlayMode.NORMAL);
+        deathAnim = createAnim("Death", 0.06f, Animation.PlayMode.NORMAL);
 
         dashEffectAnim = createAnim("DashEffect", 0.05f, Animation.PlayMode.NORMAL);
         slashEffectAnim = createAnim("SlashEffectAlt", 0.05f, Animation.PlayMode.NORMAL);
@@ -69,6 +72,7 @@ public class PlayerView {
     public void render(SpriteBatch batch, Player player) {
         TextureRegion currentFrame = getFrame(player);
         if (currentFrame == null) return;
+
         boolean isMovingRight = player.isFacingRight();
         if (currentFrame.isFlipX() != isMovingRight) {
             currentFrame.flip(true, false);
@@ -81,7 +85,15 @@ public class PlayerView {
         float drawX = player.getX() - (visualWidth / 2);
         float drawY = player.getY() - (player.getHeight() / 2);
 
+        if (player.isInvincible && !player.isDead()) {
+            float flicker = (float) Math.abs(Math.sin(player.invincibilityTimer * 15f)) * 0.7f + 0.3f;
+            batch.setColor(flicker, flicker, flicker, 1f);
+        } else {
+            batch.setColor(Color.WHITE);
+        }
         batch.draw(currentFrame, drawX, drawY, visualWidth, visualHeight);
+
+        batch.setColor(Color.WHITE);
 
         TextureRegion effectFrame = null;
         float effectDrawX = drawX;
@@ -116,6 +128,7 @@ public class PlayerView {
                 }
                 break;
         }
+
         if (effectFrame != null) {
             if (effectFrame.isFlipX() != isMovingRight) {
                 effectFrame.flip(true, false);
@@ -134,6 +147,9 @@ public class PlayerView {
         Animation<TextureRegion> selectedAnim;
 
         switch (player.getCurrentState()) {
+            case DEAD:
+                selectedAnim = deathAnim;
+                break;
             case DASHING:
                 selectedAnim = dashAnim;
                 break;

@@ -2,6 +2,7 @@ package D.HollowKnight.models;
 
 import D.HollowKnight.controllers.MenuController;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 
 import java.util.HashSet;
@@ -11,8 +12,10 @@ public class Player {
     public enum State {
         IDLE, RUNNING, RUN_TO_IDLE, AIRBORNE, FALLING, LANDING,
         DASHING, DOUBLE_JUMPING, WALL_SLIDING,
-        ATTACKING, UP_ATTACKING, DOWN_ATTACKING
+        ATTACKING, UP_ATTACKING, DOWN_ATTACKING, DEAD
     }
+    public enum AttackDirection { SIDE, UP, DOWN }
+    private AttackDirection currentAttackDir = AttackDirection.SIDE;
 
     private Body body;
     private float hitBoxWidth = 0.2f;
@@ -51,9 +54,12 @@ public class Player {
     public boolean isFocusing = false;
     public float focusTimer = 0f;
     public final float FOCUS_DURATION = 1.5f;
-    public final int FOCUS_SOUL_COST = 33; // معمولا در هالونایت یک سوم مخزن است
+    public final int FOCUS_SOUL_COST = 33;
     private int currentSpawnPointId = 1;
     private Set<Integer> unlockedSpawns = new HashSet<>();
+    private boolean needsRespawn = false;
+    private boolean isDead = false;
+    private Fixture attackFixture;
 
     public Player(float startX, float startY, World world) {
         currentState = State.IDLE;
@@ -79,7 +85,7 @@ public class Player {
         body.setUserData(this);
 
         PolygonShape footShape = new PolygonShape();
-        footShape.setAsBox(hitBoxWidth / 2.5f, 0.05f, new com.badlogic.gdx.math.Vector2(0, -hitBoxHeight / 2), 0);
+        footShape.setAsBox(hitBoxWidth / 2.5f, 0.05f, new Vector2(0, -hitBoxHeight / 2), 0);
         FixtureDef footDef = new FixtureDef();
         footDef.shape = footShape;
         footDef.isSensor = true;
@@ -87,17 +93,60 @@ public class Player {
         footShape.dispose();
 
         PolygonShape wallShape = new PolygonShape();
-        wallShape.setAsBox(hitBoxWidth / 2 + 0.02f, hitBoxHeight / 3f, new com.badlogic.gdx.math.Vector2(0, 0), 0);
+        wallShape.setAsBox(hitBoxWidth / 2 + 0.02f, hitBoxHeight / 3f, new Vector2(0, 0), 0);
         FixtureDef wallDef = new FixtureDef();
         wallDef.shape = wallShape;
         wallDef.isSensor = true;
         body.createFixture(wallDef).setUserData("wallSensor");
         wallShape.dispose();
+
+        PolygonShape attackShape = new PolygonShape();
+        attackShape.setAsBox(0.15f, 0.2f, new Vector2(0.3f, 0), 0);
+        FixtureDef attackDef = new FixtureDef();
+        attackDef.shape = attackShape;
+        attackDef.isSensor = true; // فقط برای تشخیص برخورد
+        attackFixture = body.createFixture(attackDef);
+        attackFixture.setUserData("attack");
+        attackShape.dispose();
     }
 
     public void update(float delta, MenuController controller) {
+        if (isDead) {
+            body.setLinearVelocity(0, body.getLinearVelocity().y);
+
+            if (currentState != State.DEAD) {
+                currentState = State.DEAD;
+                stateTimer = 0;
+            } else {
+                stateTimer += delta;
+            }
+            return;
+        }
+
         float velX = 0;
         float velY = body.getLinearVelocity().y;
+
+        if (attackTimer > 0) {
+            PolygonShape shape = (PolygonShape) attackFixture.getShape();
+
+            if (currentAttackDir == AttackDirection.UP) {
+                shape.setAsBox(0.3f, 0.2f, new Vector2(0, 0.4f), 0);
+                attackFixture.setUserData("attack");
+
+            } else if (currentAttackDir == AttackDirection.DOWN) {
+                shape.setAsBox(0.3f, 0.2f, new Vector2(0, -0.4f), 0);
+                attackFixture.setUserData("downAttack");
+
+            } else {
+                shape.setAsBox(0.15f, 0.2f, new Vector2(isFacingRight ? 0.3f : -0.3f, 0), 0);
+                attackFixture.setUserData("attack");
+            }
+
+            attackFixture.setSensor(true);
+        } else {
+            ((PolygonShape)attackFixture.getShape()).setAsBox(0f, 0f, new Vector2(0, 0), 0);
+            attackFixture.setUserData("attack");
+        }
 
         if (dashCooldown > 0) dashCooldown -= delta;
         if (attackTimer > 0) attackTimer -= delta;
@@ -172,9 +221,18 @@ public class Player {
             if (!Gdx.input.isKeyPressed(controller.getKeyJump()) && velY > 0) {
                 velY *= 0.5f;
             }
+
             if (Gdx.input.isKeyJustPressed(controller.getKeyAttack()) && attackTimer <= 0) {
                 attackTimer = ATTACK_DURATION;
                 landingTimer = 0;
+
+                if (Gdx.input.isKeyPressed(controller.getKeyUp())) {
+                    currentAttackDir = AttackDirection.UP;
+                } else if (Gdx.input.isKeyPressed(controller.getKeyDown()) && !isOnGround()) {
+                    currentAttackDir = AttackDirection.DOWN;
+                } else {
+                    currentAttackDir = AttackDirection.SIDE;
+                }
             }
 
             if (isSlidingOnWall() && velY < 0) {
@@ -259,19 +317,6 @@ public class Player {
     public float getY() { return body.getPosition().y; }
     public float getWidth() { return hitBoxWidth; }
     public float getHeight() { return hitBoxHeight; }
-    public void takeDamage() {
-        if (isInvincible) return;
-        currentMasks--;
-        isInvincible = true;
-        invincibilityTimer = INVINCIBILITY_DURATION;
-        isFocusing = false;
-        focusTimer = 0;
-
-        if (currentMasks <= 0) {
-            body.setTransform(2f, 1f, 0);
-            currentMasks = maxMasks;
-        }
-    }
 
     public void gainSoul() {
         soul = Math.min(soul + 11, MAX_SOUL);
@@ -296,7 +341,7 @@ public class Player {
             sb.append(id).append(",");
         }
         if (sb.length() > 0) {
-            sb.setLength(sb.length() - 1); // حذف آخرین کاما
+            sb.setLength(sb.length() - 1);
         }
         return sb.toString();
     }
@@ -309,5 +354,41 @@ public class Player {
                 unlockedSpawns.add(Integer.parseInt(part.trim()));
             }
         }
+    }
+    public void takeDamage() {
+        if (isInvincible || isDead) return;
+        currentMasks--;
+
+        if (currentMasks <= 0) {
+            isDead = true;
+        } else {
+            needsRespawn = true;
+            isInvincible = true;
+            invincibilityTimer = INVINCIBILITY_DURATION;
+        }
+
+        isFocusing = false;
+        focusTimer = 0;
+    }
+
+    public void respawnAt(com.badlogic.gdx.math.Vector2 pos) {
+        body.setTransform(pos.x, pos.y, 0);
+        body.setLinearVelocity(0, 0);
+    }
+
+    public boolean needsRespawn() {
+        return needsRespawn;
+    }
+
+    public void setNeedsRespawn(boolean needsRespawn) {
+        this.needsRespawn = needsRespawn;
+    }
+
+    public boolean isDead() {
+        return isDead;
+    }
+
+    public void setDead(boolean dead) {
+        isDead = dead;
     }
 }

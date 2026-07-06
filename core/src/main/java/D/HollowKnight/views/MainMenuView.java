@@ -31,6 +31,7 @@ public class MainMenuView implements Screen {
     private Table mainTable;
     private SettingsTable settingsTable;
     private StartGameTable startGameTable;
+    private GuideMenuTable guideMenuTable;
 
     private Image mainBg;
     private Image settingsBg;
@@ -95,6 +96,7 @@ public class MainMenuView implements Screen {
         settingsTable = new SettingsTable(style, mainTable, settingsBg, controller, darknessLayer);
         startGameTable = new StartGameTable(style, mainTable, settingsBg, controller);
         ControlsTable controlsTable = new ControlsTable(style, settingsTable, controller);
+        guideMenuTable = new GuideMenuTable(style , mainTable , controller , settingsBg);
         settingsTable.setControlsTable(controlsTable);
 
         MapSelectionTable mapSelectionTable = new MapSelectionTable(style, startGameTable, controller);
@@ -118,6 +120,15 @@ public class MainMenuView implements Screen {
             }
         });
 
+        guideBtn.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                guideMenuTable.buildUI();
+                mainTable.addAction(Actions.moveTo(-1280, 0, 0.75f, Interpolation.exp10Out));
+                guideMenuTable.addAction(Actions.moveTo(0, 0, 0.75f, Interpolation.exp10Out));
+            }
+        });
+
         quitBtn.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -131,6 +142,7 @@ public class MainMenuView implements Screen {
         stage.addActor(controlsTable);
         stage.addActor(startGameTable);
         stage.addActor(mapSelectionTable);
+        stage.addActor(guideMenuTable);
         stage.addActor(darknessLayer);
     }
 

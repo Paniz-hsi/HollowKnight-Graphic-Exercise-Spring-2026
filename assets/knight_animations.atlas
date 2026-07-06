@@ -185,14 +185,7 @@ Dash
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
-  index: 8
-Dash
-  rotate: false
-  xy: 1055, 1130
-  size: 349, 186
-  orig: 349, 186
-  offset: 0, 0
-  index: 7
+  index: 9
 Dash
   rotate: false
   xy: 1055, 1130
@@ -206,280 +199,329 @@ Dash
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
-  index: 9
+  index: 11
 Dash
   rotate: false
   xy: 1055, 1130
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
-  index: 11
-Double Jump
+  index: 8
+Dash
+  rotate: false
+  xy: 1055, 1130
+  size: 349, 186
+  orig: 349, 186
+  offset: 0, 0
+  index: 7
+Death
   rotate: false
   xy: 1406, 1130
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
   index: 0
-Double Jump
+Death
   rotate: false
   xy: 2, 942
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
   index: 1
-Double Jump
+Death
   rotate: false
   xy: 353, 942
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
   index: 2
-Double Jump
+Death
   rotate: false
   xy: 704, 942
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
   index: 3
-Double Jump
+Death
   rotate: false
   xy: 1055, 942
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
   index: 4
-Double Jump
+Death
   rotate: false
   xy: 1406, 942
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
   index: 5
-Double Jump
+Death
   rotate: false
   xy: 2, 754
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
   index: 6
-Double Jump
+Death
+  rotate: false
+  xy: 2, 754
+  size: 349, 186
+  orig: 349, 186
+  offset: 0, 0
+  index: 7
+Death
   rotate: false
   xy: 353, 754
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
-  index: 7
-DownSlash
+  index: 8
+Death
+  rotate: false
+  xy: 353, 754
+  size: 349, 186
+  orig: 349, 186
+  offset: 0, 0
+  index: 9
+Death
   rotate: false
   xy: 704, 754
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
-  index: 0
-DownSlash
+  index: 10
+Death
+  rotate: false
+  xy: 704, 754
+  size: 349, 186
+  orig: 349, 186
+  offset: 0, 0
+  index: 11
+Death
   rotate: false
   xy: 1055, 754
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
-  index: 1
-DownSlash
+  index: 12
+Death
+  rotate: false
+  xy: 1055, 754
+  size: 349, 186
+  orig: 349, 186
+  offset: 0, 0
+  index: 13
+Death
   rotate: false
   xy: 1406, 754
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
-  index: 2
-DownSlash
+  index: 14
+Death
+  rotate: false
+  xy: 1406, 754
+  size: 349, 186
+  orig: 349, 186
+  offset: 0, 0
+  index: 15
+Death
   rotate: false
   xy: 2, 566
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
-  index: 3
-DownSlash
+  index: 16
+Death
   rotate: false
   xy: 2, 566
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
-  index: 4
-DownSlashEffect
-  rotate: false
-  xy: 1757, 1089
-  size: 182, 209
-  orig: 182, 209
-  offset: 0, 0
-  index: 0
-DownSlashEffect
-  rotate: false
-  xy: 1757, 1089
-  size: 182, 209
-  orig: 182, 209
-  offset: 0, 0
-  index: 1
-DownSlashEffect
-  rotate: false
-  xy: 1757, 878
-  size: 182, 209
-  orig: 182, 209
-  offset: 0, 0
-  index: 2
-DownSlashEffect
-  rotate: false
-  xy: 1757, 878
-  size: 182, 209
-  orig: 182, 209
-  offset: 0, 0
-  index: 3
-DownSlashEffect
-  rotate: false
-  xy: 1757, 667
-  size: 182, 209
-  orig: 182, 209
-  offset: 0, 0
-  index: 4
-DownSlashEffect
-  rotate: false
-  xy: 1757, 667
-  size: 182, 209
-  orig: 182, 209
-  offset: 0, 0
-  index: 5
-Idle
+  index: 17
+Double Jump
   rotate: false
   xy: 353, 566
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
   index: 0
-Idle
+Double Jump
   rotate: false
   xy: 704, 566
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
   index: 1
-Idle
+Double Jump
   rotate: false
   xy: 1055, 566
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
   index: 2
-Idle
+Double Jump
   rotate: false
   xy: 1406, 566
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
   index: 3
-Idle
+Double Jump
   rotate: false
   xy: 2, 378
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
   index: 4
-Idle
+Double Jump
   rotate: false
   xy: 353, 378
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
   index: 5
-Idle
+Double Jump
   rotate: false
   xy: 704, 378
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
   index: 6
-Idle
+Double Jump
   rotate: false
   xy: 1055, 378
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
   index: 7
-Idle
+DownSlash
   rotate: false
   xy: 1406, 378
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
-  index: 8
-Landing
+  index: 0
+DownSlash
   rotate: false
   xy: 2, 190
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
-  index: 0
-Landing
+  index: 1
+DownSlash
   rotate: false
   xy: 353, 190
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
-  index: 1
-Landing
+  index: 2
+DownSlash
   rotate: false
   xy: 704, 190
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
+  index: 3
+DownSlash
+  rotate: false
+  xy: 704, 190
+  size: 349, 186
+  orig: 349, 186
+  offset: 0, 0
+  index: 4
+DownSlashEffect
+  rotate: false
+  xy: 1757, 1089
+  size: 182, 209
+  orig: 182, 209
+  offset: 0, 0
+  index: 0
+DownSlashEffect
+  rotate: false
+  xy: 1757, 1089
+  size: 182, 209
+  orig: 182, 209
+  offset: 0, 0
+  index: 1
+DownSlashEffect
+  rotate: false
+  xy: 1757, 878
+  size: 182, 209
+  orig: 182, 209
+  offset: 0, 0
   index: 2
-Landing
+DownSlashEffect
+  rotate: false
+  xy: 1757, 878
+  size: 182, 209
+  orig: 182, 209
+  offset: 0, 0
+  index: 3
+DownSlashEffect
+  rotate: false
+  xy: 1757, 667
+  size: 182, 209
+  orig: 182, 209
+  offset: 0, 0
+  index: 4
+DownSlashEffect
+  rotate: false
+  xy: 1757, 667
+  size: 182, 209
+  orig: 182, 209
+  offset: 0, 0
+  index: 5
+Idle
   rotate: false
   xy: 1055, 190
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
-  index: 3
-Run To Idle
+  index: 0
+Idle
   rotate: false
   xy: 1406, 190
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
-  index: 0
-Run To Idle
+  index: 1
+Idle
   rotate: false
   xy: 2, 2
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
-  index: 1
-Run To Idle
+  index: 2
+Idle
   rotate: false
   xy: 353, 2
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
-  index: 2
-Run To Idle
+  index: 3
+Idle
   rotate: false
   xy: 704, 2
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
-  index: 3
-Run To Idle
+  index: 4
+Idle
   rotate: false
   xy: 1055, 2
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
-  index: 4
-Run To Idle
+  index: 5
+Idle
   rotate: false
   xy: 1406, 2
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
-  index: 5
+  index: 6
 UpSlashEffect
   rotate: false
   xy: 1757, 1688
@@ -530,323 +572,413 @@ filter: Nearest, Nearest
 repeat: none
 Dash Effect
   rotate: false
-  xy: 2, 1787
+  xy: 1406, 221
   size: 401, 217
   orig: 401, 217
   offset: 0, 0
   index: 0
 Dash Effect
+  rotate: false
+  xy: 2, 33
+  size: 401, 217
+  orig: 401, 217
+  offset: 0, 0
+  index: 1
+Dash Effect
+  rotate: false
+  xy: 405, 33
+  size: 401, 217
+  orig: 401, 217
+  offset: 0, 0
+  index: 2
+Dash Effect
+  rotate: false
+  xy: 808, 33
+  size: 401, 217
+  orig: 401, 217
+  offset: 0, 0
+  index: 3
+Dash Effect
+  rotate: false
+  xy: 1211, 2
+  size: 401, 217
+  orig: 401, 217
+  offset: 0, 0
+  index: 4
+Dash Effect
+  rotate: false
+  xy: 1614, 2
+  size: 401, 217
+  orig: 401, 217
+  offset: 0, 0
+  index: 5
+Idle
+  rotate: false
+  xy: 2, 1756
+  size: 349, 186
+  orig: 349, 186
+  offset: 0, 0
+  index: 7
+Idle
+  rotate: false
+  xy: 353, 1756
+  size: 349, 186
+  orig: 349, 186
+  offset: 0, 0
+  index: 8
+Landing
+  rotate: false
+  xy: 704, 1756
+  size: 349, 186
+  orig: 349, 186
+  offset: 0, 0
+  index: 0
+Landing
+  rotate: false
+  xy: 1055, 1756
+  size: 349, 186
+  orig: 349, 186
+  offset: 0, 0
+  index: 1
+Landing
+  rotate: false
+  xy: 1406, 1756
+  size: 349, 186
+  orig: 349, 186
+  offset: 0, 0
+  index: 2
+Landing
   rotate: false
   xy: 2, 1568
-  size: 401, 217
-  orig: 401, 217
-  offset: 0, 0
-  index: 1
-Dash Effect
-  rotate: false
-  xy: 405, 1787
-  size: 401, 217
-  orig: 401, 217
-  offset: 0, 0
-  index: 2
-Dash Effect
-  rotate: false
-  xy: 2, 1349
-  size: 401, 217
-  orig: 401, 217
+  size: 349, 186
+  orig: 349, 186
   offset: 0, 0
   index: 3
-Dash Effect
-  rotate: false
-  xy: 405, 1568
-  size: 401, 217
-  orig: 401, 217
-  offset: 0, 0
-  index: 4
-Dash Effect
-  rotate: false
-  xy: 808, 1787
-  size: 401, 217
-  orig: 401, 217
-  offset: 0, 0
-  index: 5
-Dash Effect
-  rotate: false
-  xy: 2, 1130
-  size: 401, 217
-  orig: 401, 217
-  offset: 0, 0
-  index: 6
-Dash Effect
-  rotate: false
-  xy: 405, 1349
-  size: 401, 217
-  orig: 401, 217
-  offset: 0, 0
-  index: 7
 Run
   rotate: false
-  xy: 808, 1599
+  xy: 704, 1380
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
   index: 0
 Run
   rotate: false
-  xy: 1211, 1818
+  xy: 1055, 1380
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
   index: 1
 Run
   rotate: false
-  xy: 2, 942
+  xy: 1406, 1380
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
   index: 2
 Run
   rotate: false
-  xy: 405, 1161
+  xy: 2, 1192
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
   index: 3
 Run
   rotate: false
-  xy: 808, 1411
+  xy: 353, 1192
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
   index: 4
 Run
   rotate: false
-  xy: 1562, 1818
+  xy: 704, 1192
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
   index: 5
 Run
   rotate: false
-  xy: 2, 754
+  xy: 1055, 1192
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
   index: 6
 Run
   rotate: false
-  xy: 2, 566
+  xy: 1406, 1192
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
   index: 7
 Run
   rotate: false
-  xy: 2, 378
+  xy: 2, 1004
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
   index: 8
 Run
   rotate: false
-  xy: 2, 190
+  xy: 353, 1004
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
   index: 9
 Run
   rotate: false
-  xy: 2, 2
+  xy: 704, 1004
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
   index: 10
 Run
   rotate: false
-  xy: 808, 1223
+  xy: 1055, 1004
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
   index: 11
 Run
   rotate: false
-  xy: 1211, 1630
+  xy: 1406, 1004
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
   index: 12
+Run To Idle
+  rotate: false
+  xy: 353, 1568
+  size: 349, 186
+  orig: 349, 186
+  offset: 0, 0
+  index: 0
+Run To Idle
+  rotate: false
+  xy: 704, 1568
+  size: 349, 186
+  orig: 349, 186
+  offset: 0, 0
+  index: 1
+Run To Idle
+  rotate: false
+  xy: 1055, 1568
+  size: 349, 186
+  orig: 349, 186
+  offset: 0, 0
+  index: 2
+Run To Idle
+  rotate: false
+  xy: 1406, 1568
+  size: 349, 186
+  orig: 349, 186
+  offset: 0, 0
+  index: 3
+Run To Idle
+  rotate: false
+  xy: 2, 1380
+  size: 349, 186
+  orig: 349, 186
+  offset: 0, 0
+  index: 4
+Run To Idle
+  rotate: false
+  xy: 353, 1380
+  size: 349, 186
+  orig: 349, 186
+  offset: 0, 0
+  index: 5
 Slash
   rotate: false
-  xy: 353, 785
+  xy: 704, 628
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
   index: 0
 Slash
   rotate: false
-  xy: 353, 597
+  xy: 1055, 628
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
   index: 1
 Slash
   rotate: false
-  xy: 353, 409
+  xy: 1406, 628
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
   index: 2
 Slash
   rotate: false
-  xy: 353, 221
+  xy: 2, 440
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
   index: 3
 Slash
   rotate: false
-  xy: 353, 221
+  xy: 2, 440
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
   index: 4
 SlashAlt
   rotate: false
-  xy: 1562, 1630
+  xy: 2, 816
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
   index: 0
 SlashAlt
   rotate: false
-  xy: 1159, 1442
+  xy: 353, 816
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
   index: 1
 SlashAlt
   rotate: false
-  xy: 1159, 1254
+  xy: 704, 816
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
   index: 2
 SlashAlt
   rotate: false
-  xy: 1510, 1442
+  xy: 1055, 816
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
   index: 3
 SlashAlt
   rotate: false
-  xy: 1510, 1442
+  xy: 1055, 816
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
   index: 4
 SlashEffectAlt
   rotate: false
-  xy: 1510, 1254
+  xy: 1406, 816
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
   index: 0
 SlashEffectAlt
   rotate: false
-  xy: 1510, 1254
+  xy: 1406, 816
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
   index: 1
 SlashEffectAlt
   rotate: false
-  xy: 405, 973
+  xy: 2, 628
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
   index: 2
 SlashEffectAlt
   rotate: false
-  xy: 405, 973
+  xy: 2, 628
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
   index: 3
 SlashEffectAlt
   rotate: false
-  xy: 756, 1035
+  xy: 353, 628
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
   index: 4
 SlashEffectAlt
   rotate: false
-  xy: 756, 1035
+  xy: 353, 628
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
   index: 5
 UpSlash
   rotate: false
-  xy: 353, 33
+  xy: 353, 440
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
   index: 0
 UpSlash
   rotate: false
-  xy: 1159, 1066
+  xy: 704, 440
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
   index: 1
 UpSlash
   rotate: false
-  xy: 1510, 1066
+  xy: 1055, 440
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
   index: 2
 UpSlash
   rotate: false
-  xy: 1510, 878
+  xy: 1406, 440
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
   index: 3
 UpSlash
   rotate: false
-  xy: 1510, 878
+  xy: 1406, 440
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
   index: 4
 Wall Slide
   rotate: false
-  xy: 1107, 878
+  xy: 2, 252
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
   index: 0
 Wall Slide
   rotate: false
-  xy: 704, 785
+  xy: 353, 252
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
   index: 1
 Wall Slide
   rotate: false
-  xy: 704, 597
+  xy: 704, 252
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
   index: 2
 Wall Slide
   rotate: false
-  xy: 704, 409
+  xy: 1055, 252
   size: 349, 186
   orig: 349, 186
   offset: 0, 0
   index: 3
+
+knight_animations3.png
+size: 1024, 256
+format: RGBA8888
+filter: Nearest, Nearest
+repeat: none
+Dash Effect
+  rotate: false
+  xy: 2, 2
+  size: 401, 217
+  orig: 401, 217
+  offset: 0, 0
+  index: 6
+Dash Effect
+  rotate: false
+  xy: 405, 2
+  size: 401, 217
+  orig: 401, 217
+  offset: 0, 0
+  index: 7

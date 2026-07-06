@@ -1,12 +1,24 @@
 package D.HollowKnight.views;
 
+import D.HollowKnight.controllers.GameController;
+import D.HollowKnight.controllers.MenuController;
 import D.HollowKnight.models.Player;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
@@ -15,10 +27,14 @@ public class GameUI {
     private OrthographicCamera uiCamera;
     private Viewport uiViewport;
     private SpriteBatch uiBatch;
+    private com.badlogic.gdx.graphics.g2d.BitmapFont font;
 
     private Texture filledMaskTex;
     private Texture emptyMaskTex;
     private Texture staticHealthBarTex;
+    private Texture darkOverlayTex;
+    private Stage stage;
+    private boolean isDeathUiReady = false;
 
     private Animation<TextureRegion> breakAnimation;
     private Animation<TextureRegion> refillAnimation;
@@ -43,7 +59,7 @@ public class GameUI {
         }
     }
 
-    public GameUI() {
+    public GameUI(GameController mainGame, MenuController menuController, TextButton.TextButtonStyle btnStyle) {
         uiCamera = new OrthographicCamera();
         uiViewport = new FitViewport(800, 480, uiCamera);
         uiCamera.position.set(800 / 2f, 480 / 2f, 0);
@@ -65,6 +81,46 @@ public class GameUI {
         Texture refillSheet = new Texture("HealthRefill.png");
         TextureRegion[][] refillTmp = TextureRegion.split(refillSheet, refillSheet.getWidth() / 5, refillSheet.getHeight());
         refillAnimation = new Animation<>(0.08f, refillTmp[0]);
+
+        FreeTypeFontGenerator gen = new FreeTypeFontGenerator(Gdx.files.internal("Trajans.ttf"));
+        FreeTypeFontGenerator.FreeTypeFontParameter param = new FreeTypeFontGenerator.FreeTypeFontParameter();
+        param.size = 30;
+        font = gen.generateFont(param);
+        gen.dispose();
+
+        stage = new com.badlogic.gdx.scenes.scene2d.Stage(uiViewport, uiBatch);
+
+        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+        pixmap.setColor(new Color(0, 0, 0, 0.75f));
+        pixmap.fill();
+        Image darkOverlay = new Image(new Texture(pixmap));
+        darkOverlay.setSize(800, 480);
+        pixmap.dispose();
+        stage.addActor(darkOverlay);
+
+        com.badlogic.gdx.scenes.scene2d.ui.Table table = new com.badlogic.gdx.scenes.scene2d.ui.Table();
+        table.setFillParent(true);
+        table.center();
+
+        BitmapFont deathFont = new BitmapFont();
+        deathFont.getData().setScale(3f);
+        Label.LabelStyle labelStyle = new Label.LabelStyle(deathFont, Color.RED);
+        Label deathLabel = new Label("DEFEATED!", labelStyle);
+
+        TextButton exitBtn = new TextButton("EXIT & DELETE SAVE", btnStyle);
+        exitBtn.getLabel().setColor(Color.RED);
+
+        table.add(deathLabel).padBottom(40).row();
+        table.add(exitBtn);
+        stage.addActor(table);
+
+        exitBtn.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                menuController.getDatabase().deleteSaveSlot(menuController.getCurrentSlot());
+                mainGame.setScreen(new MainMenuView(mainGame));
+            }
+        });
     }
 
     public void render(Player player) {
@@ -140,6 +196,20 @@ public class GameUI {
             }
         }
 
+        if (player.isDead() && player.getStateTimer() > 1.0f) {
+
+            if (!isDeathUiReady) {
+                Gdx.input.setInputProcessor(stage);
+                isDeathUiReady = true;
+            }
+
+            uiBatch.end();
+
+            stage.act(Gdx.graphics.getDeltaTime());
+            stage.draw();
+
+            uiBatch.begin();
+        }
         uiBatch.end();
     }
 
@@ -152,5 +222,8 @@ public class GameUI {
         filledMaskTex.dispose();
         emptyMaskTex.dispose();
         staticHealthBarTex.dispose();
+        if (font != null) font.dispose();
+        if (darkOverlayTex != null) darkOverlayTex.dispose();
+        if (stage != null) stage.dispose();
     }
 }

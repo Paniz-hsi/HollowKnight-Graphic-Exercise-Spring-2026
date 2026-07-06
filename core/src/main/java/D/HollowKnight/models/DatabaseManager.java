@@ -299,4 +299,15 @@ public class DatabaseManager {
         } catch (SQLException e) { e.printStackTrace(); }
         return 0;
     }
+
+    public void deleteSaveSlot(int slot) {
+        String sql = "UPDATE saves SET has_save = 0, map_name = 'UNKNOWN', progress = 0, spawn_point = 1, unlocked_spawns = '1', current_masks = 5, max_masks = 5, soul = 0 WHERE slot = ?";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, slot);
+            pstmt.executeUpdate();
+            System.out.println("Slot " + slot + " deleted and reset to defaults.");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 }

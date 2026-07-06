@@ -1,5 +1,6 @@
 package D.HollowKnight.controllers;
 
+import D.HollowKnight.models.Crawlid;
 import D.HollowKnight.models.Player;
 import com.badlogic.gdx.physics.box2d.*;
 
@@ -18,17 +19,57 @@ public class WorldContactListener implements ContactListener {
             getPlayerFromFixture(fixA, fixB, "wallSensor").addWallContact();
         }
 
-        if (isSensorMatch(fixA, fixB, "downAttack", "enemy") || isSensorMatch(fixA, fixB, "downAttack", "spikes")) {
+        if (isSensorMatch(fixA, fixB, "edge_left", "ground") || isSensorMatch(fixA, fixB, "edge_left", "platform")) {
+            Crawlid c = getCrawlidFromFixture(fixA, fixB, "edge_left");
+            if (c != null) c.leftEdgeContacts++;
+        }
+
+        if (isSensorMatch(fixA, fixB, "edge_right", "ground") || isSensorMatch(fixA, fixB, "edge_right", "platform")) {
+            Crawlid c = getCrawlidFromFixture(fixA, fixB, "edge_right");
+            if (c != null) c.rightEdgeContacts++;
+        }
+
+        if (isSensorMatch(fixA, fixB, "downAttack", "enemy") || isSensorMatch(fixA, fixB, "downAttack", "hazard")) {
             Player player = getPlayerFromFixture(fixA, fixB, "downAttack");
             if (player != null) {
                 player.triggerPogoJump();
             }
         }
 
-        if (isSensorMatch(fixA, fixB, "player", "enemy") || isSensorMatch(fixA, fixB, "player", "spikes")) {
+        if (isSensorMatch(fixA, fixB, "player", "enemy")) {
+            Player p = getPlayerFromFixture(fixA, fixB, "player");
+            if (p != null) p.takeDamage();
+        }
+
+        if (isSensorMatch(fixA, fixB, "player", "enemy") || isSensorMatch(fixA, fixB, "player", "hazard")) {
             Player player = getPlayerFromFixture(fixA, fixB, "player");
             if (player != null) {
                 player.takeDamage();
+            }
+        }
+        if (isSensorMatch(fixA, fixB, "attack", "enemy")) {
+            Fixture enemyFix = fixA.getUserData().equals("enemy") ? fixA : fixB;
+
+            if (enemyFix.getBody().getUserData() instanceof D.HollowKnight.models.Crawlid) {
+                D.HollowKnight.models.Crawlid crawlid = (D.HollowKnight.models.Crawlid) enemyFix.getBody().getUserData();
+                crawlid.takeDamage();
+            }
+            else if (enemyFix.getBody().getUserData() instanceof D.HollowKnight.models.Mossfly) {
+                D.HollowKnight.models.Mossfly mossfly = (D.HollowKnight.models.Mossfly) enemyFix.getBody().getUserData();
+                mossfly.takeDamage();
+            }
+
+            Player p = getPlayerFromFixture(fixA, fixB, "attack");
+            if (p != null) p.gainSoul();
+        }
+
+        if (isSensorMatch(fixA, fixB, "enemy_wall_sensor", "ground") ||
+            isSensorMatch(fixA, fixB, "enemy_wall_sensor", "wall") ||
+            isSensorMatch(fixA, fixB, "enemy_wall_sensor", "hazard")) {
+            Fixture enemyFix = fixA.getUserData().equals("enemy_wall_sensor") ? fixA : fixB;
+            if (enemyFix.getBody().getUserData() instanceof Crawlid) {
+                Crawlid crawlid = (Crawlid) enemyFix.getBody().getUserData();
+                crawlid.reverseDirection();
             }
         }
 
@@ -60,6 +101,16 @@ public class WorldContactListener implements ContactListener {
 
         if (isSensorMatch(fixA, fixB, "wallSensor", "wall")) {
             getPlayerFromFixture(fixA, fixB, "wallSensor").removeWallContact();
+        }
+
+        if (isSensorMatch(fixA, fixB, "edge_left", "ground") || isSensorMatch(fixA, fixB, "edge_left", "platform")) {
+            Crawlid c = getCrawlidFromFixture(fixA, fixB, "edge_left");
+            if (c != null) c.leftEdgeContacts--;
+        }
+
+        if (isSensorMatch(fixA, fixB, "edge_right", "ground") || isSensorMatch(fixA, fixB, "edge_right", "platform")) {
+            Crawlid c = getCrawlidFromFixture(fixA, fixB, "edge_right");
+            if (c != null) c.rightEdgeContacts--;
         }
     }
 
@@ -114,5 +165,14 @@ public class WorldContactListener implements ContactListener {
             }
         }
         return -1;
+    }
+
+    private Crawlid getCrawlidFromFixture(Fixture fixA, Fixture fixB, String target) {
+        if (fixA.getUserData() != null && fixA.getUserData().equals(target) && fixA.getBody().getUserData() instanceof Crawlid) {
+            return (Crawlid) fixA.getBody().getUserData();
+        } else if (fixB.getUserData() != null && fixB.getUserData().equals(target) && fixB.getBody().getUserData() instanceof Crawlid) {
+            return (Crawlid) fixB.getBody().getUserData();
+        }
+        return null;
     }
 }

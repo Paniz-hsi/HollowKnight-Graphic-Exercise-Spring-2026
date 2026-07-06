@@ -15,6 +15,11 @@ public class MapModel {
     private TiledMap map;
     public static final float PPM = 450f;
     private HashMap<Integer, Vector2> spawnPoints;
+    private Vector2 crawlidSpawn;
+    private Vector2 mossflySpawn;
+    private Vector2 huskSpawn;
+    private Vector2 crystallizedSpawn;
+    private Vector2 falseKnightSpawn;
 
     public MapModel(World world, TiledMap map) {
         this.world = world;
@@ -75,6 +80,32 @@ public class MapModel {
                 float rawX = ((PointMapObject) object).getPoint().x;
                 float rawY = ((PointMapObject) object).getPoint().y;
 
+                if (object.getName() != null && object.getName().equalsIgnoreCase("crawlid")) {
+                    crawlidSpawn = new Vector2(rawX / PPM, rawY / PPM);
+                    System.out.println("Crawlid spawn loaded at X:" + crawlidSpawn.x + " Y:" + crawlidSpawn.y);
+                    continue;
+                }
+                if (object.getName() != null && object.getName().equalsIgnoreCase("mossfly")) {
+                    mossflySpawn = new Vector2(rawX / PPM, rawY / PPM);
+                    System.out.println("Mossfly spawn loaded at X:" + mossflySpawn.x + " Y:" + mossflySpawn.y);
+                    continue;
+                }
+                if (object.getName() != null && object.getName().equalsIgnoreCase("husk")) {
+                    huskSpawn = new Vector2(rawX / PPM, rawY / PPM);
+                    System.out.println("Husk spawn loaded at X:" + huskSpawn.x + " Y:" + huskSpawn.y);
+                    continue;
+                }
+                if (object.getName() != null && object.getName().equalsIgnoreCase("Crystallized")) {
+                    crystallizedSpawn = new Vector2(rawX / PPM, rawY / PPM);
+                    System.out.println("Crystallized spawn loaded at X:" + crystallizedSpawn.x + " Y:" + crystallizedSpawn.y);
+                    continue;
+                }
+                if (object.getName() != null && object.getName().equalsIgnoreCase("falseKnight")) {
+                    falseKnightSpawn = new Vector2(rawX / PPM, rawY / PPM);
+                    System.out.println("False Knight spawn loaded at X:" + falseKnightSpawn.x + " Y:" + falseKnightSpawn.y);
+                    continue;
+                }
+
                 float x = rawX / PPM;
                 float y = rawY / PPM;
 
@@ -124,5 +155,13 @@ public class MapModel {
         body.createFixture(fdef).setUserData(userData);
 
         shape.dispose();
+    }
+
+    public Vector2 getCrawlidSpawn() {
+        return crawlidSpawn;
+    }
+
+    public Vector2 getMossflySpawn() {
+        return mossflySpawn;
     }
 }
