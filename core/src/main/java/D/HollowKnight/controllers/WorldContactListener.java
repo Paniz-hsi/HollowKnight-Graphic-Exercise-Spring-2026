@@ -1,9 +1,6 @@
 package D.HollowKnight.controllers;
 
-import D.HollowKnight.models.Crawlid;
-import D.HollowKnight.models.HuskHornhead;
-import D.HollowKnight.models.Mossfly;
-import D.HollowKnight.models.Player;
+import D.HollowKnight.models.*;
 import com.badlogic.gdx.physics.box2d.*;
 
 public class WorldContactListener implements ContactListener {
@@ -49,9 +46,21 @@ public class WorldContactListener implements ContactListener {
             HuskHornhead h = getHuskHornheadFromFixture(fixA, fixB, "hornhead_right");
             if (h != null) h.rightEdgeContacts++;
         }
-        if (isSensorMatch(fixA, fixB, "player", "enemy") || isSensorMatch(fixA, fixB, "player", "hazard")) {
-            Player p = getPlayerFromFixture(fixA, fixB, "player");
-            if (p != null) p.takeDamage();
+        if (isSensorMatch(fixA, fixB, "player", "enemy")) {
+            Player player = getPlayerFromFixture(fixA, fixB, "player");
+            Fixture enemyFix = fixA.getUserData().equals("enemy") ? fixA : fixB;
+
+            if (player != null && enemyFix.getBody() != null) {
+                player.takeDamageFromEnemy(enemyFix.getBody().getPosition().x);
+            }
+        }
+
+        if (isSensorMatch(fixA, fixB, "player", "spike") || isSensorMatch(fixA, fixB, "player", "hazard")) {
+            Player player = getPlayerFromFixture(fixA, fixB, "player");
+
+            if (player != null) {
+                player.takeDamageFromHazard();
+            }
         }
 
         if (isSensorMatch(fixA, fixB, "attack", "enemy")) {
@@ -65,6 +74,9 @@ public class WorldContactListener implements ContactListener {
             }
             else if (enemyFix.getBody().getUserData() instanceof HuskHornhead) {
                 ((HuskHornhead) enemyFix.getBody().getUserData()).takeDamage();
+            }
+            else if (enemyFix.getBody().getUserData() instanceof CrystalGuardian) {
+                ((CrystalGuardian) enemyFix.getBody().getUserData()).takeDamage();
             }
 
             Player p = getPlayerFromFixture(fixA, fixB, "attack");
@@ -92,6 +104,26 @@ public class WorldContactListener implements ContactListener {
         if (isSensorMatch(fixA, fixB, "downAttack", "hazard")) {
             Player p = getPlayerFromFixture(fixA, fixB, "downAttack");
             if (p != null) p.triggerPogoJump();
+        }
+
+        if (isSensorMatch(fixA, fixB, "guardian_left", "ground") || isSensorMatch(fixA, fixB, "guardian_left", "platform")) {
+            CrystalGuardian g = getGuardianFromFixture(fixA, fixB, "guardian_left");
+            if (g != null) g.leftEdgeContacts++;
+        }
+        if (isSensorMatch(fixA, fixB, "guardian_right", "ground") || isSensorMatch(fixA, fixB, "guardian_right", "platform")) {
+            CrystalGuardian g = getGuardianFromFixture(fixA, fixB, "guardian_right");
+            if (g != null) g.rightEdgeContacts++;
+        }
+
+        if (isSensorMatch(fixA, fixB, "guardian_wall_sensor", "ground") ||
+            isSensorMatch(fixA, fixB, "guardian_wall_sensor", "wall") ||
+            isSensorMatch(fixA, fixB, "guardian_wall_sensor", "platform")) {
+
+            Fixture guardianFix = fixA.getUserData().equals("guardian_wall_sensor") ? fixA : fixB;
+            if (guardianFix.getBody().getUserData() instanceof CrystalGuardian) {
+                CrystalGuardian guardian = (CrystalGuardian) guardianFix.getBody().getUserData();
+                guardian.reverseDirection();
+            }
         }
 
         if (isCheckpointContact(fixA, fixB)) {
@@ -135,6 +167,14 @@ public class WorldContactListener implements ContactListener {
         if (isSensorMatch(fixA, fixB, "hornhead_right", "ground") || isSensorMatch(fixA, fixB, "hornhead_right", "platform")) {
             HuskHornhead h = getHuskHornheadFromFixture(fixA, fixB, "hornhead_right");
             if (h != null) h.rightEdgeContacts--;
+        }
+        if (isSensorMatch(fixA, fixB, "guardian_left", "ground") || isSensorMatch(fixA, fixB, "guardian_left", "platform")) {
+            CrystalGuardian g = getGuardianFromFixture(fixA, fixB, "guardian_left");
+            if (g != null) g.leftEdgeContacts--;
+        }
+        if (isSensorMatch(fixA, fixB, "guardian_right", "ground") || isSensorMatch(fixA, fixB, "guardian_right", "platform")) {
+            CrystalGuardian g = getGuardianFromFixture(fixA, fixB, "guardian_right");
+            if (g != null) g.rightEdgeContacts--;
         }
     }
 
@@ -206,6 +246,14 @@ public class WorldContactListener implements ContactListener {
             return (HuskHornhead) fixA.getBody().getUserData();
         } else if (fixB.getUserData() != null && fixB.getUserData().equals(target) && fixB.getBody().getUserData() instanceof HuskHornhead) {
             return (HuskHornhead) fixB.getBody().getUserData();
+        }
+        return null;
+    }
+    private CrystalGuardian getGuardianFromFixture(Fixture fixA, Fixture fixB, String target) {
+        if (fixA.getUserData() != null && fixA.getUserData().equals(target) && fixA.getBody().getUserData() instanceof CrystalGuardian) {
+            return (CrystalGuardian) fixA.getBody().getUserData();
+        } else if (fixB.getUserData() != null && fixB.getUserData().equals(target) && fixB.getBody().getUserData() instanceof CrystalGuardian) {
+            return (CrystalGuardian) fixB.getBody().getUserData();
         }
         return null;
     }

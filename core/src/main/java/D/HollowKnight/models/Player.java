@@ -12,7 +12,7 @@ public class Player {
     public enum State {
         IDLE, RUNNING, RUN_TO_IDLE, AIRBORNE, FALLING, LANDING,
         DASHING, DOUBLE_JUMPING, WALL_SLIDING,
-        ATTACKING, UP_ATTACKING, DOWN_ATTACKING, DEAD
+        ATTACKING, UP_ATTACKING, DOWN_ATTACKING, DEAD, FOCUSING
     }
     public enum AttackDirection { SIDE, UP, DOWN }
     private AttackDirection currentAttackDir = AttackDirection.SIDE;
@@ -61,6 +61,10 @@ public class Player {
     private boolean isDead = false;
     private Fixture attackFixture;
 
+    public boolean justHealed = false;
+    public float healEffectTimer = 0f;
+    public boolean canMove = true;
+
     public Player(float startX, float startY, World world) {
         currentState = State.IDLE;
         previousState = State.IDLE;
@@ -104,7 +108,7 @@ public class Player {
         attackShape.setAsBox(0.15f, 0.2f, new Vector2(0.3f, 0), 0);
         FixtureDef attackDef = new FixtureDef();
         attackDef.shape = attackShape;
-        attackDef.isSensor = true; // فقط برای تشخیص برخورد
+        attackDef.isSensor = true;
         attackFixture = body.createFixture(attackDef);
         attackFixture.setUserData("attack");
         attackShape.dispose();
@@ -112,13 +116,16 @@ public class Player {
 
     public void update(float delta, MenuController controller) {
         if (isDead) {
-            body.setLinearVelocity(0, body.getLinearVelocity().y);
+            stateTimer += delta;
+            body.setLinearVelocity(0, 0);
 
-            if (currentState != State.DEAD) {
-                currentState = State.DEAD;
-                stateTimer = 0;
-            } else {
-                stateTimer += delta;
+            if (stateTimer > 2.5f) {
+                isDead = false;
+                currentMasks = 5;
+                currentState = State.IDLE;
+
+                currentSpawnPointId = 1;
+                needsRespawn = true;
             }
             return;
         }
@@ -128,20 +135,16 @@ public class Player {
 
         if (attackTimer > 0) {
             PolygonShape shape = (PolygonShape) attackFixture.getShape();
-
             if (currentAttackDir == AttackDirection.UP) {
                 shape.setAsBox(0.3f, 0.2f, new Vector2(0, 0.4f), 0);
                 attackFixture.setUserData("attack");
-
             } else if (currentAttackDir == AttackDirection.DOWN) {
                 shape.setAsBox(0.3f, 0.2f, new Vector2(0, -0.4f), 0);
                 attackFixture.setUserData("downAttack");
-
             } else {
                 shape.setAsBox(0.15f, 0.2f, new Vector2(isFacingRight ? 0.3f : -0.3f, 0), 0);
                 attackFixture.setUserData("attack");
             }
-
             attackFixture.setSensor(true);
         } else {
             ((PolygonShape)attackFixture.getShape()).setAsBox(0f, 0f, new Vector2(0, 0), 0);
@@ -158,7 +161,9 @@ public class Player {
             }
         }
 
-        if (Gdx.input.isKeyPressed(com.badlogic.gdx.Input.Keys.A) && isOnGround() && currentState == State.IDLE) {
+        if (canMove && Gdx.input.isKeyPressed(com.badlogic.gdx.Input.Keys.A) && isOnGround() &&
+            (currentState == State.IDLE || currentState == State.FOCUSING)) {
+
             if (soul >= FOCUS_SOUL_COST && currentMasks < maxMasks) {
                 isFocusing = true;
                 focusTimer += delta;
@@ -167,11 +172,23 @@ public class Player {
                     currentMasks++;
                     soul -= FOCUS_SOUL_COST;
                     focusTimer = 0;
+                    justHealed = true;
+                    healEffectTimer = 0;
                 }
+            } else {
+                isFocusing = false;
+                focusTimer = 0;
             }
         } else {
             isFocusing = false;
             focusTimer = 0;
+        }
+
+        if (justHealed) {
+            healEffectTimer += delta;
+            if (healEffectTimer >= 0.4f) {
+                justHealed = false;
+            }
         }
 
         if (isOnGround() && previousState == State.FALLING) {
@@ -179,14 +196,22 @@ public class Player {
             canDoubleJump = true;
         }
 
-        if (Gdx.input.isKeyJustPressed(controller.getKeyDash()) && dashCooldown <= 0 && !isDashing) {
+        if (canMove && Gdx.input.isKeyJustPressed(controller.getKeyDash()) && dashCooldown <= 0 && !isDashing && !isFocusing) {
             isDashing = true;
             dashTimer = DASH_DURATION;
             dashCooldown = 0.8f;
             attackTimer = 0;
         }
 
-        if (isDashing) {
+        if (!canMove) {
+            velX = 0;
+            velY = body.getLinearVelocity().y;
+            isDashing = false;
+            attackTimer = 0;
+        } else if (isFocusing) {
+            velX = 0;
+            velY = body.getLinearVelocity().y;
+        } else if (isDashing) {
             dashTimer -= delta;
             velX = isFacingRight ? DASH_SPEED : -DASH_SPEED;
             velY = 0;
@@ -242,7 +267,6 @@ public class Player {
         }
 
         body.setLinearVelocity(velX, velY);
-
         currentState = determineState(velX, velY, controller);
 
         if (currentState != previousState) {
@@ -255,6 +279,7 @@ public class Player {
 
     private State determineState(float velX, float velY, MenuController controller) {
         if (isDashing) return State.DASHING;
+        if (isFocusing) return State.FOCUSING;
 
         if (attackTimer > 0) {
             if (Gdx.input.isKeyPressed(controller.getKeyUp())) {
@@ -269,23 +294,13 @@ public class Player {
         if (!isOnGround()) {
             if (isSlidingOnWall()) return State.WALL_SLIDING;
             if (currentState == State.DOUBLE_JUMPING && stateTimer < 0.25f) return State.DOUBLE_JUMPING;
-
             return (velY > 0.1f) ? State.AIRBORNE : State.FALLING;
         }
 
         if (landingTimer > 0) return State.LANDING;
-
-        if (Math.abs(velX) > 0.1f) {
-            return State.RUNNING;
-        }
-
-        if (previousState == State.RUNNING && Math.abs(velX) <= 0.1f) {
-            return State.RUN_TO_IDLE;
-        }
-
-        if (previousState == State.RUN_TO_IDLE && stateTimer < 0.4f) {
-            return State.RUN_TO_IDLE;
-        }
+        if (Math.abs(velX) > 0.1f) return State.RUNNING;
+        if (previousState == State.RUNNING && Math.abs(velX) <= 0.1f) return State.RUN_TO_IDLE;
+        if (previousState == State.RUN_TO_IDLE && stateTimer < 0.4f) return State.RUN_TO_IDLE;
 
         return State.IDLE;
     }
@@ -294,17 +309,12 @@ public class Player {
     public void removeFootContact() { footContacts--; }
     public void addWallContact() { wallContacts++; }
     public void removeWallContact() { wallContacts--; }
-
-    public boolean isOnGround() {
-        return footContacts > 0;
-    }
-
+    public boolean isOnGround() { return footContacts > 0; }
     public boolean isSlidingOnWall() {
         return wallContacts > 0 && !isOnGround() &&
             (Gdx.input.isKeyPressed(com.badlogic.gdx.Input.Keys.LEFT) ||
                 Gdx.input.isKeyPressed(com.badlogic.gdx.Input.Keys.RIGHT));
     }
-
     public void triggerPogoJump() {
         body.setLinearVelocity(body.getLinearVelocity().x, JUMP_VELOCITY * 1.2f);
         canDoubleJump = true;
@@ -318,77 +328,87 @@ public class Player {
     public float getWidth() { return hitBoxWidth; }
     public float getHeight() { return hitBoxHeight; }
 
-    public void gainSoul() {
-        soul = Math.min(soul + 11, MAX_SOUL);
-    }
-
+    public void gainSoul() { soul = Math.min(soul + 11, MAX_SOUL); }
     public void activateCheckpoint(int spawnId) {
         this.currentSpawnPointId = spawnId;
         this.unlockedSpawns.add(spawnId);
     }
-
-    public int getCurrentSpawnPointId() {
-        return currentSpawnPointId;
-    }
-
-    public int getProgressPercentage() {
-        return Math.min(this.unlockedSpawns.size() * 20, 100);
-    }
-
+    public int getCurrentSpawnPointId() { return currentSpawnPointId; }
+    public int getProgressPercentage() { return Math.min(this.unlockedSpawns.size() * 20, 100); }
     public String getUnlockedSpawnsString() {
         StringBuilder sb = new StringBuilder();
         for (Integer id : unlockedSpawns) {
             sb.append(id).append(",");
         }
-        if (sb.length() > 0) {
-            sb.setLength(sb.length() - 1);
-        }
+        if (sb.length() > 0) sb.setLength(sb.length() - 1);
         return sb.toString();
     }
-
     public void loadUnlockedSpawns(String data) {
         unlockedSpawns.clear();
         if (data != null && !data.isEmpty()) {
             String[] parts = data.split(",");
-            for (String part : parts) {
-                unlockedSpawns.add(Integer.parseInt(part.trim()));
-            }
+            for (String part : parts) unlockedSpawns.add(Integer.parseInt(part.trim()));
         }
     }
-    public void takeDamage() {
+
+    public void takeDamageFromEnemy(float attackerX) {
         if (isInvincible || isDead) return;
         currentMasks--;
 
         if (currentMasks <= 0) {
-            isDead = true;
+            triggerDeath();
+        } else {
+            isInvincible = true;
+            invincibilityTimer = INVINCIBILITY_DURATION;
+
+            float knockbackDir = (body.getPosition().x < attackerX) ? -1.0f : 1.0f;
+            body.setLinearVelocity(knockbackDir * 5.0f, 3.0f); // پرت شدن به عقب و کمی بالا
+        }
+        isFocusing = false;
+        focusTimer = 0;
+    }
+
+    public void takeDamageFromHazard() {
+        if (isInvincible || isDead) return;
+        currentMasks--;
+
+        if (currentMasks <= 0) {
+            triggerDeath();
         } else {
             needsRespawn = true;
             isInvincible = true;
             invincibilityTimer = INVINCIBILITY_DURATION;
         }
-
         isFocusing = false;
         focusTimer = 0;
     }
 
+    private void triggerDeath() {
+        isDead = true;
+        currentState = State.DEAD;
+        stateTimer = 0;
+        body.setLinearVelocity(0, 0);
+    }
     public void respawnAt(com.badlogic.gdx.math.Vector2 pos) {
         body.setTransform(pos.x, pos.y, 0);
         body.setLinearVelocity(0, 0);
     }
-
-    public boolean needsRespawn() {
-        return needsRespawn;
+    public boolean needsRespawn() { return needsRespawn; }
+    public void setNeedsRespawn(boolean needsRespawn) { this.needsRespawn = needsRespawn; }
+    public boolean isDead() { return isDead; }
+    public void setDead(boolean dead) { isDead = dead; }
+    public Vector2 getPosition() {
+        if (body != null) {
+            return body.getPosition();
+        }
+        return new Vector2(0, 0);
     }
 
-    public void setNeedsRespawn(boolean needsRespawn) {
-        this.needsRespawn = needsRespawn;
+    public void setCanMove(boolean canMove) {
+        this.canMove = canMove;
     }
 
-    public boolean isDead() {
-        return isDead;
-    }
-
-    public void setDead(boolean dead) {
-        isDead = dead;
+    public boolean isCanMove() {
+        return canMove;
     }
 }

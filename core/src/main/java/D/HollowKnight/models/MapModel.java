@@ -20,6 +20,7 @@ public class MapModel {
     private Vector2 huskSpawn;
     private Vector2 crystallizedSpawn;
     private Vector2 falseKnightSpawn;
+    private Vector2 zoteSpawn;
 
     public MapModel(World world, TiledMap map) {
         this.world = world;
@@ -105,6 +106,11 @@ public class MapModel {
                     System.out.println("False Knight spawn loaded at X:" + falseKnightSpawn.x + " Y:" + falseKnightSpawn.y);
                     continue;
                 }
+                if (object.getName() != null && object.getName().equalsIgnoreCase("zote")) {
+                    zoteSpawn = new Vector2(rawX / PPM, rawY / PPM);
+                    System.out.println("Zote spawn loaded at X:" + zoteSpawn.x + " Y:" + zoteSpawn.y);
+                    continue;
+                }
 
                 float x = rawX / PPM;
                 float y = rawY / PPM;
@@ -175,5 +181,9 @@ public class MapModel {
 
     public Vector2 getFalseKnightSpawn() {
         return falseKnightSpawn;
+    }
+
+    public Vector2 getZoteSpawn() {
+        return zoteSpawn;
     }
 }

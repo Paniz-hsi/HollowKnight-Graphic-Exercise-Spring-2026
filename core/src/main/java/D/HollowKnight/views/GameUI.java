@@ -3,15 +3,13 @@ package D.HollowKnight.views;
 import D.HollowKnight.controllers.GameController;
 import D.HollowKnight.controllers.MenuController;
 import D.HollowKnight.models.Player;
+import D.HollowKnight.models.Zote;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Animation;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -28,6 +26,11 @@ public class GameUI {
     private Viewport uiViewport;
     private SpriteBatch uiBatch;
     private com.badlogic.gdx.graphics.g2d.BitmapFont font;
+    private Zote zote;
+
+    public void setZote(Zote zote) {
+        this.zote = zote;
+    }
 
     private Texture filledMaskTex;
     private Texture emptyMaskTex;
@@ -35,7 +38,8 @@ public class GameUI {
     private Texture darkOverlayTex;
     private Stage stage;
     private boolean isDeathUiReady = false;
-
+    private TextureAtlas uiAtlas;
+    private Array<TextureAtlas.AtlasRegion> soulFrames;
     private Animation<TextureRegion> breakAnimation;
     private Animation<TextureRegion> refillAnimation;
     private Animation<TextureRegion> introHealthBarAnim;
@@ -81,6 +85,8 @@ public class GameUI {
         Texture refillSheet = new Texture("HealthRefill.png");
         TextureRegion[][] refillTmp = TextureRegion.split(refillSheet, refillSheet.getWidth() / 5, refillSheet.getHeight());
         refillAnimation = new Animation<>(0.08f, refillTmp[0]);
+        uiAtlas = new TextureAtlas("knight_animations.atlas");
+        soulFrames = uiAtlas.findRegions("HUD Cln");
 
         FreeTypeFontGenerator gen = new FreeTypeFontGenerator(Gdx.files.internal("Trajans.ttf"));
         FreeTypeFontGenerator.FreeTypeFontParameter param = new FreeTypeFontGenerator.FreeTypeFontParameter();
@@ -144,6 +150,27 @@ public class GameUI {
             uiBatch.draw(hbFrame, hbX, hbY, hbWidth, hbHeight);
         } else {
             uiBatch.draw(staticHealthBarTex, hbX, hbY, hbWidth, hbHeight);
+            if (soulFrames != null && soulFrames.size > 0) {
+                float soulPercent = (float) player.soul / player.MAX_SOUL;
+
+                int totalFrames = soulFrames.size;
+                int frameIndex = (int) (soulPercent * (totalFrames - 1));
+                frameIndex = Math.max(0, Math.min(frameIndex, totalFrames - 1));
+                TextureRegion currentSoulFrame = soulFrames.get(frameIndex);
+
+                float soulSizeMultiplier = 3.0f;
+
+                float drawW = currentSoulFrame.getRegionWidth() * UI_SCALE * soulSizeMultiplier;
+                float drawH = currentSoulFrame.getRegionHeight() * UI_SCALE * soulSizeMultiplier;
+
+                float offsetX = -32f;
+                float offsetY = -45f;
+
+                float drawX = hbX + (offsetX * UI_SCALE);
+                float drawY = hbY + (offsetY * UI_SCALE);
+
+                uiBatch.draw(currentSoulFrame, drawX, drawY, drawW, drawH);
+            }
         }
 
         if (introHealthBarAnim.isAnimationFinished(introTimer)) {
@@ -196,19 +223,14 @@ public class GameUI {
             }
         }
 
-        if (player.isDead() && player.getStateTimer() > 1.0f) {
-
-            if (!isDeathUiReady) {
-                Gdx.input.setInputProcessor(stage);
-                isDeathUiReady = true;
+        if (zote != null) {
+            if (zote.isPlayerNear() && !zote.isDialogueActive()) {
+                font.draw(uiBatch, "Press [ E ] to Talk", 300, 250);
             }
 
-            uiBatch.end();
-
-            stage.act(Gdx.graphics.getDeltaTime());
-            stage.draw();
-
-            uiBatch.begin();
+            if (zote.isDialogueActive()) {
+                font.draw(uiBatch, zote.getDisplayedText(), 100, 150);
+            }
         }
         uiBatch.end();
     }
@@ -225,5 +247,6 @@ public class GameUI {
         if (font != null) font.dispose();
         if (darkOverlayTex != null) darkOverlayTex.dispose();
         if (stage != null) stage.dispose();
+        uiAtlas.dispose();
     }
 }

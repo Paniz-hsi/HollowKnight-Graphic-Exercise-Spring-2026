@@ -30,6 +30,10 @@ public class PlayerView {
     private Animation<TextureRegion> downSlashEffectAnim;
     private Animation<TextureRegion> deathAnim;
 
+    private Animation<TextureRegion> focusStartAnim;
+    private Animation<TextureRegion> focusLoopAnim;
+    private Animation<TextureRegion> focusGetAnim;
+
     private TextureRegion fallbackFrame;
 
     public PlayerView() {
@@ -55,6 +59,11 @@ public class PlayerView {
         slashEffectAnim = createAnim("SlashEffectAlt", 0.05f, Animation.PlayMode.NORMAL);
         upSlashEffectAnim = createAnim("UpSlashEffect", 0.05f, Animation.PlayMode.NORMAL);
         downSlashEffectAnim = createAnim("DownSlashEffect", 0.05f, Animation.PlayMode.NORMAL);
+
+        focusStartAnim = new Animation<>(0.1f, atlas.findRegions("Focus Start"), Animation.PlayMode.NORMAL);
+        focusLoopAnim = new Animation<>(0.1f, atlas.findRegions("Focus"), Animation.PlayMode.LOOP);
+        focusGetAnim = new Animation<>(0.08f, atlas.findRegions("Focus Get"), Animation.PlayMode.NORMAL);
+
         Array<TextureAtlas.AtlasRegion> runFrames = atlas.findRegions("Run");
         if (runFrames.size > 0) {
             fallbackFrame = runFrames.first();
@@ -91,6 +100,7 @@ public class PlayerView {
         } else {
             batch.setColor(Color.WHITE);
         }
+
         batch.draw(currentFrame, drawX, drawY, visualWidth, visualHeight);
 
         batch.setColor(Color.WHITE);
@@ -106,21 +116,18 @@ public class PlayerView {
                     effectDrawX += isMovingRight ? -visualWidth / 1.5f : visualWidth / 1.5f;
                 }
                 break;
-
             case ATTACKING:
                 if (slashEffectAnim != null) {
                     effectFrame = slashEffectAnim.getKeyFrame(player.getStateTimer(), false);
                     effectDrawX += isMovingRight ? visualWidth / 3f : -visualWidth / 3f;
                 }
                 break;
-
             case UP_ATTACKING:
                 if (upSlashEffectAnim != null) {
                     effectFrame = upSlashEffectAnim.getKeyFrame(player.getStateTimer(), false);
                     effectDrawY += visualHeight / 1.5f;
                 }
                 break;
-
             case DOWN_ATTACKING:
                 if (downSlashEffectAnim != null) {
                     effectFrame = downSlashEffectAnim.getKeyFrame(player.getStateTimer(), false);
@@ -144,50 +151,37 @@ public class PlayerView {
     }
 
     private TextureRegion getFrame(Player player) {
-        Animation<TextureRegion> selectedAnim;
+        if (player.justHealed) {
+            return focusGetAnim.getKeyFrame(player.healEffectTimer, false);
+        }
 
+        if (player.getCurrentState() == Player.State.FOCUSING) {
+            if (player.focusTimer < 0.3f) {
+                return focusStartAnim.getKeyFrame(player.focusTimer, false);
+            } else {
+                return focusLoopAnim.getKeyFrame(player.focusTimer - 0.3f, true);
+            }
+        }
+        Animation<TextureRegion> selectedAnim;
         switch (player.getCurrentState()) {
-            case DEAD:
-                selectedAnim = deathAnim;
-                break;
-            case DASHING:
-                selectedAnim = dashAnim;
-                break;
-            case DOUBLE_JUMPING:
-                selectedAnim = doubleJumpAnim;
-                break;
-            case AIRBORNE:
-                selectedAnim = airborneAnim;
-                break;
-            case FALLING:
-                selectedAnim = fallAnim;
-                break;
-            case LANDING:
-                selectedAnim = landingAnim;
-                break;
-            case WALL_SLIDING:
-                selectedAnim = wallSideAnim;
-                break;
-            case ATTACKING:
-                selectedAnim = slashAnim;
-                break;
-            case UP_ATTACKING:
-                selectedAnim = upSlashAnim;
-                break;
-            case DOWN_ATTACKING:
-                selectedAnim = downSlashAnim;
-                break;
-            case RUNNING:
-                selectedAnim = runAnim;
-                break;
-            case RUN_TO_IDLE:
-                selectedAnim = runToIdleAnim;
-                break;
+            case DEAD: selectedAnim = deathAnim; break;
+            case DASHING: selectedAnim = dashAnim; break;
+            case DOUBLE_JUMPING: selectedAnim = doubleJumpAnim; break;
+            case AIRBORNE: selectedAnim = airborneAnim; break;
+            case FALLING: selectedAnim = fallAnim; break;
+            case LANDING: selectedAnim = landingAnim; break;
+            case WALL_SLIDING: selectedAnim = wallSideAnim; break;
+            case ATTACKING: selectedAnim = slashAnim; break;
+            case UP_ATTACKING: selectedAnim = upSlashAnim; break;
+            case DOWN_ATTACKING: selectedAnim = downSlashAnim; break;
+            case RUNNING: selectedAnim = runAnim; break;
+            case RUN_TO_IDLE: selectedAnim = runToIdleAnim; break;
             case IDLE:
             default:
                 selectedAnim = idleAnim;
                 break;
         }
+
         if (selectedAnim != null) {
             boolean isLooping = (player.getCurrentState() == Player.State.IDLE ||
                 player.getCurrentState() == Player.State.RUNNING ||

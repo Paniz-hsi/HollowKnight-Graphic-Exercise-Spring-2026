@@ -44,6 +44,10 @@ public class MapController implements Screen {
     private Mossfly mossfly;
     private HuskHornhead husk;
     private HuskHornheadView huskView;
+    private CrystalGuardian crystalGuardian;
+    private CrystalGuardianView crystalGuardianView;
+    private Zote zote;
+    private ZoteView zoteView;
     private MenuController menuController;
     private GameUI gameUI;
     private boolean isPaused = false;
@@ -98,6 +102,18 @@ public class MapController implements Screen {
             if (enemyPos != null) {
                 husk = new HuskHornhead(world, enemyPos.x, enemyPos.y);
             }
+
+            crystalGuardianView = new CrystalGuardianView();
+            enemyPos = model.getCrystallizedSpawn();
+            if (enemyPos != null) {
+                crystalGuardian = new CrystalGuardian(world, enemyPos.x, enemyPos.y);
+            }
+            zoteView = new ZoteView();
+            Vector2 pos = model.getZoteSpawn();
+            if (pos != null) {
+                zote = new Zote(pos.x, pos.y);
+            }
+
             player.loadUnlockedSpawns(db.getSavedUnlockedSpawns(activeSlot));
             player.activateCheckpoint(savedSpawnId);
             player.currentMasks = db.getSavedMasks(activeSlot);
@@ -116,6 +132,7 @@ public class MapController implements Screen {
             style.overFontColor = Color.YELLOW;
             pauseMenuView = new PauseMenuView(this, mainGame, menuController, style);
             gameUI = new GameUI(mainGame , menuController , style);
+            gameUI.setZote(zote);
         } else {
             System.err.println("Error: File not found " + mapPath);
         }
@@ -152,6 +169,12 @@ public class MapController implements Screen {
             if (husk != null) {
                 husk.update(delta, player);
             }
+            if(crystalGuardian != null){
+                crystalGuardian.update(delta , player);
+            }
+            if(zote != null){
+                zote.update(delta , player);
+            }
             camera.update();
         }
 
@@ -174,6 +197,12 @@ public class MapController implements Screen {
             }
             if (husk != null && huskView != null) {
                 huskView.render(batch, husk);
+            }
+            if (crystalGuardian != null && crystalGuardianView != null) {
+                crystalGuardianView.render(batch, crystalGuardian);
+            }
+            if (zote != null && zoteView != null) {
+                zoteView.render(batch, zote, delta);
             }
             playerView.render(batch, player);
             batch.end();
@@ -216,6 +245,7 @@ public class MapController implements Screen {
         if (gameUI != null) gameUI.dispose();
         if (pauseMenuView != null) pauseMenuView.dispose();
         if (crawlidView != null) crawlidView.dispose();
+        if (zoteView != null) zoteView.dispose();
         if (beeParticles != null) beeParticles.dispose();
     }
 
