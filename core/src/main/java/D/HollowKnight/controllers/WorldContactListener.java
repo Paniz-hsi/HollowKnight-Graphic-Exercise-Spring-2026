@@ -68,6 +68,10 @@ public class WorldContactListener implements ContactListener {
             Fixture enemyFix = fixA.getUserData().equals("enemy") ? fixA : fixB;
             Player p = getPlayerFromFixture(fixA, fixB, "attack");
 
+            if (!(enemyFix.getBody().getUserData() instanceof FalseKnight)) {
+                AudioManager.getInstance().playSound("enemy_damage.wav");
+            }
+
             if (enemyFix.getBody().getUserData() instanceof Crawlid) {
                 ((Crawlid) enemyFix.getBody().getUserData()).takeDamage();
                 if (p != null) { p.enemiesKilled++; p.killedEnemyTypes.add("Crawlid"); }
@@ -97,6 +101,10 @@ public class WorldContactListener implements ContactListener {
         if (isSensorMatch(fixA, fixB, "downAttack", "enemy")) {
             Fixture enemyFix = fixA.getUserData().equals("enemy") ? fixA : fixB;
 
+            if (!(enemyFix.getBody().getUserData() instanceof FalseKnight)) {
+                AudioManager.getInstance().playSound("enemy_damage.wav");
+            }
+
             if (enemyFix.getBody().getUserData() instanceof Crawlid) {
                 ((Crawlid) enemyFix.getBody().getUserData()).takeDamage();
             } else if (enemyFix.getBody().getUserData() instanceof Mossfly) {
@@ -125,8 +133,6 @@ public class WorldContactListener implements ContactListener {
         }
 
         if (isSensorMatch(fixA, fixB, "attack", "door") || isSensorMatch(fixA, fixB, "downAttack", "door")) {
-            System.out.println("hit the door");
-
             Fixture doorFix = fixA.getUserData().equals("door") ? fixA : fixB;
             Fixture playerAttackFix = fixA.getUserData().equals("door") ? fixB : fixA;
             Object bodyData = doorFix.getBody().getUserData();

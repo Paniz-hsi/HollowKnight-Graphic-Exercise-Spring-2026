@@ -105,9 +105,10 @@ public class MenuController {
         });
     }
 
-    private String getMusicPathForMap(String mapPath) {
+    public String getMusicPathForMap(String mapPath) {
         if (mapPath.contains("greenpath")) return "Greenpath.mp3";
         if (mapPath.contains("crossroads")) return "crossroads_music.mp3";
+        if (mapPath.toLowerCase().contains("boss")) return "footbalistha.mp3";
         return "default_map_music.mp3";
     }
 

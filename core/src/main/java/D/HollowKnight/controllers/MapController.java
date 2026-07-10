@@ -72,6 +72,10 @@ public class MapController implements Screen {
 
         batch = new SpriteBatch();
         menuController = new MenuController(mainGame);
+        if (menuController.isMusicOn()) {
+            String mapMusic = menuController.getMusicPathForMap(mapPath);
+            AudioManager.getInstance().playMusic(mapMusic, menuController.getVolume() / 100f);
+        }
 
         if (Gdx.files.internal(mapPath).exists()) {
             map = new TmxMapLoader().load(mapPath);
@@ -169,6 +173,10 @@ public class MapController implements Screen {
                 Vector2 spawnPos = model.getSpawnPoint(player.getCurrentSpawnPointId());
                 if (spawnPos != null) {
                     player.respawnAt(spawnPos);
+                    if (menuController.isMusicOn()) {
+                        String mapMusic = menuController.getMusicPathForMap(mapPath);
+                        AudioManager.getInstance().playMusic(mapMusic, menuController.getVolume() / 100f);
+                    }
                 }
                 player.setNeedsRespawn(false);
 
@@ -201,6 +209,10 @@ public class MapController implements Screen {
                             if (player.getCurrentSpawnPointId() == 5) {
 
                                 bossDoor.isClosed = true;
+                                if (menuController.isMusicOn()) {
+                                    String mapMusic = "footbalistha.mp3";
+                                    AudioManager.getInstance().playMusic(mapMusic, menuController.getVolume() / 100f);
+                                }
                                 for (Fixture fixture : bossDoor.body.getFixtureList()) {
                                     fixture.setSensor(false);
                                 }
@@ -208,6 +220,50 @@ public class MapController implements Screen {
                             }
                         }
                     }
+                }
+            }
+            if (Gdx.input.isKeyPressed(com.badlogic.gdx.Input.Keys.CONTROL_LEFT)) {
+
+                if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.T)) {
+                    Vector2 bossPos = model.getFalseKnightSpawn();
+                    if (bossPos != null) player.respawnAt(bossPos);
+                    System.out.println("Cheat Activated: Teleported to Boss Arena");
+                }
+
+                if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.N)) {
+                    player.toggleNoclip();
+                    System.out.println("Cheat Activated: Noclip Mode -> " + player.isNoclip);
+                }
+
+                if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.H)) {
+                    player.cheatHeal();
+                    System.out.println("Cheat Activated: Emergency Heal Received");
+                }
+
+                if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.M)) {
+                    player.cheatFillSoul();
+                    System.out.println("Cheat Activated: Soul Vessel Refilled");
+                }
+
+                if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.G)) {
+                    player.isGodMode = !player.isGodMode;
+                    System.out.println("Cheat Activated: God Mode -> " + player.isGodMode);
+                }
+
+                if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.K)) {
+                    if (crawlid != null) crawlid.takeDamage();
+                    if (mossfly != null) mossfly.takeDamage();
+                    if (husk != null) husk.takeDamage();
+                    if (crystalGuardian != null) crystalGuardian.takeDamage();
+
+                    try {
+                        if (falseKnight != null && falseKnight.hp > 0) {
+                            falseKnight.hp = 0;
+                            falseKnight.takeDamage(true);
+                        }
+                    } catch (Exception ignored) {}
+
+                    System.out.println("Cheat Activated: Insta-Kill! All enemies wiped out.");
                 }
             }
             if (crawlid != null) {

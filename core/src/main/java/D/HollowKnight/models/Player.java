@@ -7,6 +7,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 
 import java.util.HashSet;
+import java.util.Random;
 import java.util.Set;
 
 public class Player {
@@ -71,6 +72,17 @@ public class Player {
     public float healEffectTimer = 0f;
     public boolean canMove = true;
     private String pendingMapTransition = null;
+    public boolean isGodMode = false;
+    public boolean isNoclip = false;
+    private String[] swordSounds = {
+        "sword_1.wav", "sword_2.wav", "sword_3.wav", "sword_4.wav", "sword_5.wav"
+    };
+    private String[] soulSounds = {
+        "soul_pickup_1.wav", "soul_pickup_2.wav", "soul_pickup_3.wav",
+        "soul_pickup_4.wav", "soul_pickup_5.wav", "soul_pickup_6.wav", "soul_pickup_7.wav"
+    };
+    private Random random = new Random();
+    private boolean isChargingSoundPlaying = false;
 
     public Player(float startX, float startY, World world , MapController mapController) {
         currentState = State.IDLE;
@@ -138,6 +150,21 @@ public class Player {
             return;
         }
 
+        if (isNoclip) {
+            float noclipSpeed = 15f;
+            float velX = 0;
+            float velY = 0;
+
+            if (Gdx.input.isKeyPressed(com.badlogic.gdx.Input.Keys.LEFT)) velX = -noclipSpeed;
+            if (Gdx.input.isKeyPressed(com.badlogic.gdx.Input.Keys.RIGHT)) velX = noclipSpeed;
+            if (Gdx.input.isKeyPressed(com.badlogic.gdx.Input.Keys.UP)) velY = noclipSpeed;
+            if (Gdx.input.isKeyPressed(com.badlogic.gdx.Input.Keys.DOWN)) velY = -noclipSpeed;
+
+            body.setLinearVelocity(velX, velY);
+            currentState = State.AIRBORNE;
+            return;
+        }
+
         float velX = 0;
         float velY = body.getLinearVelocity().y;
 
@@ -177,6 +204,12 @@ public class Player {
             (currentState == State.IDLE || currentState == State.FOCUSING)) {
 
             if (soul >= FOCUS_SOUL_COST && currentMasks < maxMasks) {
+
+                if (!isChargingSoundPlaying) {
+                    AudioManager.getInstance().playSound("focus_health_charging.wav");
+                    isChargingSoundPlaying = true;
+                }
+
                 isFocusing = true;
                 focusTimer += delta;
 
@@ -186,14 +219,19 @@ public class Player {
                     focusTimer = 0;
                     justHealed = true;
                     healEffectTimer = 0;
+                    AudioManager.getInstance().playSound("focus_health_heal.wav");
+
+                    isChargingSoundPlaying = false;
                 }
             } else {
                 isFocusing = false;
                 focusTimer = 0;
+                isChargingSoundPlaying = false;
             }
         } else {
             isFocusing = false;
             focusTimer = 0;
+            isChargingSoundPlaying = false;
         }
 
         if (justHealed) {
@@ -262,6 +300,9 @@ public class Player {
             if (Gdx.input.isKeyJustPressed(controller.getKeyAttack()) && attackTimer <= 0) {
                 attackTimer = ATTACK_DURATION;
                 landingTimer = 0;
+
+                int index = random.nextInt(swordSounds.length);
+                AudioManager.getInstance().playSound(swordSounds[index]);
 
                 if (Gdx.input.isKeyPressed(controller.getKeyUp())) {
                     currentAttackDir = AttackDirection.UP;
@@ -340,7 +381,13 @@ public class Player {
     public float getWidth() { return hitBoxWidth; }
     public float getHeight() { return hitBoxHeight; }
 
-    public void gainSoul() { soul = Math.min(soul + 11, MAX_SOUL); }
+    public void gainSoul() {
+        if (soul < MAX_SOUL) {
+            int index = random.nextInt(soulSounds.length);
+            AudioManager.getInstance().playSound(soulSounds[index]);
+        }
+        soul = Math.min(soul + 11, MAX_SOUL);
+    }
     public void activateCheckpoint(int spawnId) {
         this.currentSpawnPointId = spawnId;
         this.unlockedSpawns.add(spawnId);
@@ -364,10 +411,10 @@ public class Player {
     }
 
     public void takeDamageFromEnemy(float attackerX) {
-        if (isInvincible || isDead) return;
+        if (isInvincible || isDead || isGodMode) return;
         currentMasks--;
+        AudioManager.getInstance().playSound("hero_damage.wav");
         mapController.shakeCamera(0.2f, 0.3f);
-
         if (currentMasks <= 0) {
             triggerDeath();
         } else {
@@ -375,17 +422,17 @@ public class Player {
             invincibilityTimer = INVINCIBILITY_DURATION;
 
             float knockbackDir = (body.getPosition().x < attackerX) ? -1.0f : 1.0f;
-            body.setLinearVelocity(knockbackDir * 5.0f, 3.0f); // پرت شدن به عقب و کمی بالا
+            body.setLinearVelocity(knockbackDir * 5.0f, 3.0f);
         }
         isFocusing = false;
         focusTimer = 0;
     }
 
     public void takeDamageFromHazard() {
-        if (isInvincible || isDead) return;
+        if (isInvincible || isDead || isGodMode) return;
         currentMasks--;
+        AudioManager.getInstance().playSound("hero_damage.wav");
         mapController.shakeCamera(0.2f, 0.3f);
-
         if (currentMasks <= 0) {
             triggerDeath();
         } else {
@@ -404,7 +451,7 @@ public class Player {
         stateTimer = 0;
         body.setLinearVelocity(0, 0);
     }
-    public void respawnAt(com.badlogic.gdx.math.Vector2 pos) {
+    public void respawnAt(Vector2 pos) {
         body.setTransform(pos.x, pos.y, 0);
         body.setLinearVelocity(0, 0);
     }
@@ -436,5 +483,32 @@ public class Player {
 
     public void clearPendingMapTransition() {
         this.pendingMapTransition = null;
+    }
+
+    public void toggleNoclip() {
+        isNoclip = !isNoclip;
+        if (isNoclip) {
+            body.setType(BodyDef.BodyType.KinematicBody);
+            for(Fixture fix : body.getFixtureList()) fix.setSensor(true);
+        } else {
+            body.setType(BodyDef.BodyType.DynamicBody);
+            for(Fixture fix : body.getFixtureList()) {
+                String userData = (String) fix.getUserData();
+                if ("player".equals(userData)) fix.setSensor(false);
+            }
+        }
+    }
+
+    public void cheatHeal() {
+        if (currentMasks == maxMasks) {
+            maxMasks++;
+        }
+        currentMasks++;
+        justHealed = true;
+        healEffectTimer = 0;
+    }
+
+    public void cheatFillSoul() {
+        soul = MAX_SOUL;
     }
 }

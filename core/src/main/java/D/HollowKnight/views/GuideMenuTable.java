@@ -73,16 +73,16 @@ public class GuideMenuTable extends Table {
         mechanicsLabel.setAlignment(Align.left);
         contentTable.add(mechanicsLabel).width(700).padBottom(40).row();
 
-        Label cheatsHeader = new Label("--- CHEAT CODES (Press Left Ctrl + Key) ---", headerStyle);
+        Label cheatsHeader = new Label("--- CHEAT CODES (Press Left Ctrl & Key) ---", headerStyle);
         contentTable.add(cheatsHeader).padBottom(20).row();
 
         String cheatsText =
-            "1. Boss Arena Teleport: Instantly teleport to the False Knight arena.\n" +
-                "2. Noclip/Spectator Mode: Increase speed, disable gravity, collisions & animations.\n" +
-                "3. Emergency Heal: Gain ONE extra health mask when your health is empty.\n" +
-                "4. Refill Soul Vessel: Instantly and fully refill the Soul vessel.\n" +
-                "5. God Mode: Toggle invincibility against spikes, enemies, and bosses.\n" +
-                "6. Custom Cheat (Bonus): E.g., Insta-Kill enemies or Time Dilate.";
+            "1. Boss Arena Teleport (Ctrl & T): Instantly teleport to the False Knight arena.\n" +
+                "2. Noclip/Spectator Mode (Ctrl & N): Increase speed, disable gravity, collisions & animations.\n" +
+                "3. Emergency Heal (Ctrl & H): Gain ONE extra health mask when your health is empty.\n" +
+                "4. Refill Soul Vessel (Ctrl & M): Instantly and fully refill the Soul vessel.\n" +
+                "5. God Mode (Ctrl & G): Toggle invincibility against spikes, enemies, and bosses.\n" +
+                "6. Insta-Kill (Ctrl & K): Instantly kill all enemies in the current screen.";
 
         Label cheatsLabel = new Label(cheatsText, textStyle);
         cheatsLabel.setWrap(true);

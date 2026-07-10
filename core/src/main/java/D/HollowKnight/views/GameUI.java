@@ -27,6 +27,7 @@ public class GameUI {
     private SpriteBatch uiBatch;
     private com.badlogic.gdx.graphics.g2d.BitmapFont font;
     private Zote zote;
+    private Texture dialogueBoxTexture;
 
     public void setZote(Zote zote) {
         this.zote = zote;
@@ -88,6 +89,13 @@ public class GameUI {
         uiAtlas = new TextureAtlas("knight_animations.atlas");
         soulFrames = uiAtlas.findRegions("HUD Cln");
 
+        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+        pixmap.setColor(new Color(0, 0, 0, 0.7f));
+        pixmap.fill();
+        dialogueBoxTexture = new Texture(pixmap);
+        pixmap.dispose();
+
+
         FreeTypeFontGenerator gen = new FreeTypeFontGenerator(Gdx.files.internal("Trajans.ttf"));
         FreeTypeFontGenerator.FreeTypeFontParameter param = new FreeTypeFontGenerator.FreeTypeFontParameter();
         param.size = 30;
@@ -96,7 +104,7 @@ public class GameUI {
 
         stage = new com.badlogic.gdx.scenes.scene2d.Stage(uiViewport, uiBatch);
 
-        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+         pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
         pixmap.setColor(new Color(0, 0, 0, 0.75f));
         pixmap.fill();
         Image darkOverlay = new Image(new Texture(pixmap));
@@ -228,8 +236,16 @@ public class GameUI {
                 font.draw(uiBatch, "Press [ E ] to Talk", 300, 250);
             }
 
-            if (zote.isDialogueActive()) {
-                font.draw(uiBatch, zote.getDisplayedText(), 100, 150);
+            if (zote != null && zote.isDialogueActive()) {
+                String text = zote.getDisplayedText();
+
+                float boxWidth = 600f;
+                float boxHeight = 150f;
+                float boxX = (1280 - boxWidth) / 2f;
+                float boxY = 50f;
+                uiBatch.draw(dialogueBoxTexture, boxX, boxY, boxWidth, boxHeight);
+
+                font.draw(uiBatch, text, boxX + 30, boxY + boxHeight - 20);
             }
         }
         uiBatch.end();
@@ -247,6 +263,9 @@ public class GameUI {
         if (font != null) font.dispose();
         if (darkOverlayTex != null) darkOverlayTex.dispose();
         if (stage != null) stage.dispose();
+        if (dialogueBoxTexture != null) {
+            dialogueBoxTexture.dispose();
+        }
         uiAtlas.dispose();
     }
 }

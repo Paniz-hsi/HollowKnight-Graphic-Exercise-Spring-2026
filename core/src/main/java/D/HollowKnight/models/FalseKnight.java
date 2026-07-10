@@ -265,6 +265,12 @@ public class FalseKnight {
         recentDamageCount++;
         damageTimer = 1.5f;
 
+        if (isMaggotHit) {
+            AudioManager.getInstance().playSound("enemy_damage.wav");
+        } else {
+            AudioManager.getInstance().playSound("false_knight_damage_armour.wav");
+        }
+
         if (hp == 6 && !isPhase2) {
             triggerStun();
         } else if (hp <= 0) {

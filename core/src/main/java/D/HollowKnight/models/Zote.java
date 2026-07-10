@@ -5,6 +5,8 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 
+import java.util.Random;
+
 public class Zote {
     private Vector2 position;
     private Rectangle interactBounds;
@@ -26,6 +28,14 @@ public class Zote {
     private float typewriterTimer = 0f;
     private final float CHARS_PER_SECOND = 40f;
     private boolean isPlayerNear = false;
+    private String[] zoteVoices = {
+        "Zote_01.wav",
+        "Zote_02.wav",
+        "Zote_03.wav",
+        "Zote_04.wav",
+        "Zote_05.wav"
+    };
+    private Random random = new Random();
 
     public Zote(float x, float y) {
         this.position = new Vector2(x, y);
@@ -120,16 +130,19 @@ public class Zote {
         player.setCanMove(true);
     }
 
-    private void playZoteVoiceSFX() {
-        // TODO: sfx for zote
-        System.out.println("SFX: [Zote gibberish voice played]");
-    }
-
     public boolean isDialogueActive() { return isDialogueActive; }
     public boolean isTalking() { return isTalking; }
     public String getDisplayedText() { return displayedText; }
     public Vector2 getPosition() { return position; }
     public boolean isPlayerNear() {
         return isPlayerNear;
+    }
+    private void playZoteVoiceSFX() {
+        int index = random.nextInt(zoteVoices.length);
+        String soundFile = zoteVoices[index];
+
+        AudioManager.getInstance().playSound(soundFile);
+
+        System.out.println("SFX: Played " + soundFile);
     }
 }
