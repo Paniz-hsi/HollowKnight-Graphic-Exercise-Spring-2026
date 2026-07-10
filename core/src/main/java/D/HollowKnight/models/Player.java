@@ -1,5 +1,6 @@
 package D.HollowKnight.models;
 
+import D.HollowKnight.controllers.MapController;
 import D.HollowKnight.controllers.MenuController;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Vector2;
@@ -17,10 +18,15 @@ public class Player {
     public enum AttackDirection { SIDE, UP, DOWN }
     private AttackDirection currentAttackDir = AttackDirection.SIDE;
 
+    public int deathCount = 0;
+    public int enemiesKilled = 0;
+    public float playTime = 0f;
+    public Set<String> killedEnemyTypes = new HashSet<>();
     private Body body;
     private float hitBoxWidth = 0.2f;
     private float hitBoxHeight = 0.4f;
     private float speed = 4.0f;
+    private MapController mapController;
 
     private State currentState;
     private State previousState;
@@ -64,12 +70,14 @@ public class Player {
     public boolean justHealed = false;
     public float healEffectTimer = 0f;
     public boolean canMove = true;
+    private String pendingMapTransition = null;
 
-    public Player(float startX, float startY, World world) {
+    public Player(float startX, float startY, World world , MapController mapController) {
         currentState = State.IDLE;
         previousState = State.IDLE;
         stateTimer = 0;
         isFacingRight = true;
+        this.mapController = mapController;
 
         BodyDef bdef = new BodyDef();
         bdef.position.set(startX, startY);
@@ -146,6 +154,10 @@ public class Player {
                 attackFixture.setUserData("attack");
             }
             attackFixture.setSensor(true);
+
+            Filter filter = attackFixture.getFilterData();
+            attackFixture.setFilterData(filter);
+
         } else {
             ((PolygonShape)attackFixture.getShape()).setAsBox(0f, 0f, new Vector2(0, 0), 0);
             attackFixture.setUserData("attack");
@@ -354,6 +366,7 @@ public class Player {
     public void takeDamageFromEnemy(float attackerX) {
         if (isInvincible || isDead) return;
         currentMasks--;
+        mapController.shakeCamera(0.2f, 0.3f);
 
         if (currentMasks <= 0) {
             triggerDeath();
@@ -371,6 +384,7 @@ public class Player {
     public void takeDamageFromHazard() {
         if (isInvincible || isDead) return;
         currentMasks--;
+        mapController.shakeCamera(0.2f, 0.3f);
 
         if (currentMasks <= 0) {
             triggerDeath();
@@ -385,6 +399,7 @@ public class Player {
 
     private void triggerDeath() {
         isDead = true;
+        deathCount++;
         currentState = State.DEAD;
         stateTimer = 0;
         body.setLinearVelocity(0, 0);
@@ -410,5 +425,16 @@ public class Player {
 
     public boolean isCanMove() {
         return canMove;
+    }
+    public void setPendingMapTransition(String targetMap) {
+        this.pendingMapTransition = targetMap;
+    }
+
+    public String getPendingMapTransition() {
+        return pendingMapTransition;
+    }
+
+    public void clearPendingMapTransition() {
+        this.pendingMapTransition = null;
     }
 }

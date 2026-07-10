@@ -60,26 +60,37 @@ public class WorldContactListener implements ContactListener {
 
             if (player != null) {
                 player.takeDamageFromHazard();
+
             }
         }
 
         if (isSensorMatch(fixA, fixB, "attack", "enemy")) {
             Fixture enemyFix = fixA.getUserData().equals("enemy") ? fixA : fixB;
+            Player p = getPlayerFromFixture(fixA, fixB, "attack");
 
             if (enemyFix.getBody().getUserData() instanceof Crawlid) {
                 ((Crawlid) enemyFix.getBody().getUserData()).takeDamage();
+                if (p != null) { p.enemiesKilled++; p.killedEnemyTypes.add("Crawlid"); }
             }
             else if (enemyFix.getBody().getUserData() instanceof Mossfly) {
                 ((Mossfly) enemyFix.getBody().getUserData()).takeDamage();
+                if (p != null) { p.enemiesKilled++; p.killedEnemyTypes.add("Mossfly"); }
             }
             else if (enemyFix.getBody().getUserData() instanceof HuskHornhead) {
                 ((HuskHornhead) enemyFix.getBody().getUserData()).takeDamage();
+                if (p != null) { p.enemiesKilled++; p.killedEnemyTypes.add("HuskHornhead"); }
             }
             else if (enemyFix.getBody().getUserData() instanceof CrystalGuardian) {
                 ((CrystalGuardian) enemyFix.getBody().getUserData()).takeDamage();
+                if (p != null) { p.enemiesKilled++; p.killedEnemyTypes.add("CrystalGuardian"); }
+            }
+            if (enemyFix.getBody().getUserData() instanceof FalseKnight) {
+                FalseKnight boss = (FalseKnight) enemyFix.getBody().getUserData();
+                boolean isMaggot = enemyFix.getUserData().equals("falseKnight_maggot");
+                boss.takeDamage(isMaggot);
             }
 
-            Player p = getPlayerFromFixture(fixA, fixB, "attack");
+
             if (p != null) p.gainSoul();
         }
 
@@ -92,6 +103,13 @@ public class WorldContactListener implements ContactListener {
                 ((Mossfly) enemyFix.getBody().getUserData()).takeDamage();
             } else if (enemyFix.getBody().getUserData() instanceof HuskHornhead) {
                 ((HuskHornhead) enemyFix.getBody().getUserData()).takeDamage();
+            } else if (enemyFix.getBody().getUserData() instanceof CrystalGuardian) {
+                ((CrystalGuardian) enemyFix.getBody().getUserData()).takeDamage();
+            }
+            if (enemyFix.getBody().getUserData() instanceof FalseKnight) {
+                FalseKnight boss = (FalseKnight) enemyFix.getBody().getUserData();
+                boolean isMaggot = enemyFix.getUserData().equals("falseKnight_maggot");
+                boss.takeDamage(isMaggot);
             }
 
             Player p = getPlayerFromFixture(fixA, fixB, "downAttack");
@@ -105,6 +123,39 @@ public class WorldContactListener implements ContactListener {
             Player p = getPlayerFromFixture(fixA, fixB, "downAttack");
             if (p != null) p.triggerPogoJump();
         }
+
+        if (isSensorMatch(fixA, fixB, "attack", "door") || isSensorMatch(fixA, fixB, "downAttack", "door")) {
+            System.out.println("hit the door");
+
+            Fixture doorFix = fixA.getUserData().equals("door") ? fixA : fixB;
+            Fixture playerAttackFix = fixA.getUserData().equals("door") ? fixB : fixA;
+            Object bodyData = doorFix.getBody().getUserData();
+
+            if (bodyData instanceof Door) {
+                Door door = (Door) bodyData;
+
+                if (!door.isLocked) {
+                    Player p = (Player) playerAttackFix.getBody().getUserData();
+                    if (p != null) {
+                        p.setPendingMapTransition(door.targetMap);
+                    }
+                }
+            }
+        }
+        if (isSensorMatch(fixA, fixB, "player", "falseKnight_mace")) {
+            Player player = getPlayerFromFixture(fixA, fixB, "player");
+            Fixture maceFix = fixA.getUserData().equals("falseKnight_mace") ? fixA : fixB;
+
+            if (maceFix.getBody().getUserData() instanceof FalseKnight) {
+                FalseKnight boss = (FalseKnight) maceFix.getBody().getUserData();
+                if (boss.isMaceActive && player != null) {
+                    for (int i = 0; i < boss.currentMaceDamage; i++) {
+                        player.takeDamageFromEnemy(boss.body.getPosition().x);
+                    }
+                }
+            }
+        }
+
 
         if (isSensorMatch(fixA, fixB, "guardian_left", "ground") || isSensorMatch(fixA, fixB, "guardian_left", "platform")) {
             CrystalGuardian g = getGuardianFromFixture(fixA, fixB, "guardian_left");

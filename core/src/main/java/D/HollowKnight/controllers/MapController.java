@@ -14,6 +14,7 @@ import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
+import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.utils.viewport.FitViewport;
@@ -26,6 +27,10 @@ public class MapController implements Screen {
     private Viewport viewport;
     private PlayerView playerView;
     private BeeParticleSystem beeParticles;
+    private boolean isTransitioning = false;
+    private float shakeTimer = 0;
+    private float shakeIntensity = 0;
+    private float defaultCameraX, defaultCameraY;
 
     private TmxMapLoader mapLoader;
     private TiledMap map;
@@ -48,6 +53,8 @@ public class MapController implements Screen {
     private CrystalGuardianView crystalGuardianView;
     private Zote zote;
     private ZoteView zoteView;
+    private FalseKnight falseKnight;
+    private FalseKnightView falseKnightView;
     private MenuController menuController;
     private GameUI gameUI;
     private boolean isPaused = false;
@@ -84,7 +91,7 @@ public class MapController implements Screen {
 
             camera.position.set(startX, startY, 0);
 
-            player = new Player(startX, startY, world);
+            player = new Player(startX, startY, world, this);
             crawlidView = new CrawlidView();
             Vector2 enemyPos = model.getCrawlidSpawn();
             if (enemyPos != null) {
@@ -112,6 +119,11 @@ public class MapController implements Screen {
             Vector2 pos = model.getZoteSpawn();
             if (pos != null) {
                 zote = new Zote(pos.x, pos.y);
+            }
+            Vector2 bossPos = model.getFalseKnightSpawn();
+            if (bossPos != null) {
+                falseKnight = new FalseKnight(world, bossPos.x, bossPos.y);
+                falseKnightView = new FalseKnightView();
             }
 
             player.loadUnlockedSpawns(db.getSavedUnlockedSpawns(activeSlot));
@@ -145,7 +157,12 @@ public class MapController implements Screen {
                 pauseGame();
             }
         }
-
+        if (falseKnight != null && falseKnight.currentState == FalseKnight.State.DEATH) {
+            if (!isTransitioning) {
+                isTransitioning = true;
+                triggerEndGame();
+            }
+        }
         if (!isPaused) {
             if (world != null) world.step(1/60f, 6, 2);
             if (player != null && player.needsRespawn()) {
@@ -154,11 +171,44 @@ public class MapController implements Screen {
                     player.respawnAt(spawnPos);
                 }
                 player.setNeedsRespawn(false);
+
+                if (model.getBossDoors() != null) {
+                    for (BossDoor bossDoor : model.getBossDoors()) {
+                        bossDoor.isClosed = false;
+                        for (com.badlogic.gdx.physics.box2d.Fixture fixture : bossDoor.body.getFixtureList()) {
+                            fixture.setSensor(true);
+                        }
+                    }
+                }
+
+                if (falseKnight != null) {
+                    falseKnight.hp = 12; // جون باس پر میشه
+                    falseKnight.isPhase2 = false;
+                    falseKnight.currentState = FalseKnight.State.IDLE;
+                    falseKnight.isMaceActive = false;
+                    falseKnight.updateMaceHitbox();
+                }
             }
             if (player != null) {
+                player.playTime += delta;
                 player.update(delta, menuController);
                 camera.position.x = player.getX();
                 camera.position.y = player.getY();
+                if (model.getBossDoors() != null) {
+                    for (BossDoor bossDoor : model.getBossDoors()) {
+                        if (!bossDoor.isClosed && player != null) {
+
+                            if (player.getCurrentSpawnPointId() == 5) {
+
+                                bossDoor.isClosed = true;
+                                for (Fixture fixture : bossDoor.body.getFixtureList()) {
+                                    fixture.setSensor(false);
+                                }
+
+                            }
+                        }
+                    }
+                }
             }
             if (crawlid != null) {
                 crawlid.update(delta);
@@ -175,6 +225,30 @@ public class MapController implements Screen {
             if(zote != null){
                 zote.update(delta , player);
             }
+            if (falseKnight != null) {
+               falseKnight.update(delta , player , this);
+            }
+            if (player != null && player.getPendingMapTransition() != null && !isTransitioning) {
+                String nextMap = player.getPendingMapTransition();
+                player.clearPendingMapTransition();
+                openDoorAndTransition(nextMap);
+            }
+            defaultCameraX = player.getX();
+            defaultCameraY = player.getY();
+
+            defaultCameraX = player.getX();
+            defaultCameraY = player.getY();
+
+            if (shakeTimer > 0) {
+                float offsetX = (float) (Math.random() - 0.5f) * shakeIntensity;
+                float offsetY = (float) (Math.random() - 0.5f) * shakeIntensity;
+                camera.position.set(defaultCameraX + offsetX, defaultCameraY + offsetY, 0);
+
+                shakeTimer -= delta;
+            } else {
+                camera.position.set(defaultCameraX, defaultCameraY, 0);
+            }
+
             camera.update();
         }
 
@@ -204,6 +278,9 @@ public class MapController implements Screen {
             if (zote != null && zoteView != null) {
                 zoteView.render(batch, zote, delta);
             }
+            if (falseKnight != null && falseKnightView != null) {
+                falseKnightView.render(batch, falseKnight, falseKnight.stateTimer);
+            }
             playerView.render(batch, player);
             batch.end();
         }
@@ -213,6 +290,11 @@ public class MapController implements Screen {
         if (isPaused && pauseMenuView != null) {
             pauseMenuView.render(delta);
         }
+    }
+
+    public void shakeCamera(float intensity, float duration) {
+        this.shakeIntensity = intensity;
+        this.shakeTimer = duration;
     }
 
     @Override
@@ -247,6 +329,7 @@ public class MapController implements Screen {
         if (crawlidView != null) crawlidView.dispose();
         if (zoteView != null) zoteView.dispose();
         if (beeParticles != null) beeParticles.dispose();
+        if (falseKnightView != null) falseKnightView.dispose();
     }
 
     public void pauseGame() {
@@ -262,4 +345,57 @@ public class MapController implements Screen {
     public Player getPlayer() { return player; }
 
     public String getMapPath() { return mapPath;}
+
+    private void openDoorAndTransition(String targetMapPath) {
+        if (targetMapPath == null || targetMapPath.isEmpty()) {
+            System.err.println("Error: Target map is empty or not defined!");
+            return;
+        }
+
+        isTransitioning = true;
+        DatabaseManager db = menuController.getDatabase();
+        int activeSlot = menuController.getCurrentSlot();
+
+        db.saveGameState(
+            activeSlot,
+            targetMapPath,
+            1,
+            db.getSaveProgress(activeSlot),
+            player.getUnlockedSpawnsString(),
+            player.currentMasks,
+            player.maxMasks,
+            player.soul
+        );
+        Gdx.app.postRunnable(new Runnable() {
+            @Override
+            public void run() {
+                mainGame.setScreen(new MapController(mainGame, targetMapPath));
+                dispose();
+            }
+        });
+    }
+    private void triggerEndGame() {
+        DatabaseManager db = menuController.getDatabase();
+
+        db.unlockAchievement("Completion");
+
+        db.unlockAchievement("Defeat False Knight");
+
+        if (player.currentMasks >= 3) {
+            db.unlockAchievement("Resilient Knight");
+        }
+
+        if (player.playTime < 1800f) {
+            db.unlockAchievement("Speedrun");
+        }
+
+        if (player.killedEnemyTypes.size() >= 4) {
+            db.unlockAchievement("True Hunter");
+        }
+
+        Gdx.app.postRunnable(() -> {
+            mainGame.setScreen(new EndGameScreen(mainGame, player));
+            dispose();
+        });
+    }
 }

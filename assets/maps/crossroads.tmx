@@ -333,7 +333,7 @@
   </object>
   <object id="185" x="3992" y="3896">
    <properties>
-    <property name="id" type="int" value="4"/>
+    <property name="id" type="int" value="5"/>
    </properties>
    <point/>
   </object>
@@ -361,14 +361,15 @@
  <objectgroup id="8" name="interactables">
   <object id="188" name="door" x="-8" y="1320" width="104" height="288">
    <properties>
-    <property name="isLocked" type="bool" value="true"/>
+    <property name="isLocked" type="bool" value="false"/>
+    <property name="targetMap" value="maps/greenpath.tmx"/>
     <property name="type" value="door"/>
    </properties>
   </object>
   <object id="189" name="falseKnightDoor" x="4504" y="3104" width="144" height="504">
    <properties>
-    <property name="isLocked" type="bool" value="true"/>
-    <property name="type" value="door"/>
+    <property name="isLocked" type="bool" value="false"/>
+    <property name="type" value="falseKnightDoor"/>
    </properties>
   </object>
  </objectgroup>

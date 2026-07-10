@@ -7,6 +7,7 @@ import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
+import com.badlogic.gdx.utils.Array;
 
 import java.util.HashMap;
 
@@ -21,12 +22,15 @@ public class MapModel {
     private Vector2 crystallizedSpawn;
     private Vector2 falseKnightSpawn;
     private Vector2 zoteSpawn;
+    private Array<BossDoor> bossDoors = new Array<>();
+    public Array<BossDoor> getBossDoors() { return bossDoors; }
 
     public MapModel(World world, TiledMap map) {
         this.world = world;
         this.map = map;
         this.spawnPoints = new HashMap<>();
         parseMapData();
+        createDoors(world);
     }
 
     private void parseMapData() {
@@ -60,7 +64,7 @@ public class MapModel {
             }
         }
 
-        if (map.getLayers().get("interactables") != null) {
+        /*if (map.getLayers().get("interactables") != null) {
             for (MapObject object : map.getLayers().get("interactables").getObjects().getByType(RectangleMapObject.class)) {
                 Rectangle rect = ((RectangleMapObject) object).getRectangle();
                 if (rect.getWidth() == 0 || rect.getHeight() == 0) {
@@ -74,7 +78,7 @@ public class MapModel {
                     createStaticBody(rect, false, "door");
                 }
             }
-        }
+        }*/
 
         if (map.getLayers().get("spawns") != null) {
             for (MapObject object : map.getLayers().get("spawns").getObjects().getByType(PointMapObject.class)) {
@@ -185,5 +189,69 @@ public class MapModel {
 
     public Vector2 getZoteSpawn() {
         return zoteSpawn;
+    }
+
+    public void createDoors(World world) {
+        if (map.getLayers().get("interactables") != null) {
+            for (MapObject object : map.getLayers().get("interactables").getObjects()) {
+                if (object instanceof RectangleMapObject) {
+                    if (object.getProperties().containsKey("type")) {
+                        String type = object.getProperties().get("type", String.class);
+                        if ("door".equals(type)) {
+                            Rectangle rect = ((RectangleMapObject) object).getRectangle();
+
+                            boolean isLocked = false;
+                            if (object.getProperties().containsKey("isLocked")) {
+                                isLocked = object.getProperties().get("isLocked", Boolean.class);
+                            }
+                            String targetMap = "";
+                            if (object.getProperties().containsKey("targetMap")) {
+                                targetMap = object.getProperties().get("targetMap", String.class);
+                            }
+
+                            BodyDef bdef = new BodyDef();
+                            bdef.type = BodyDef.BodyType.StaticBody;
+
+                            bdef.position.set((rect.x + rect.width / 2) / PPM, (rect.y + rect.height / 2) / PPM);
+                            Body body = world.createBody(bdef);
+
+                            PolygonShape shape = new PolygonShape();
+
+                            shape.setAsBox((rect.width / 2) / PPM, (rect.height / 2) / PPM);
+
+                            FixtureDef fdef = new FixtureDef();
+                            fdef.shape = shape;
+                            fdef.isSensor = true;
+
+                            Door doorData = new Door(isLocked, targetMap);
+                            body.createFixture(fdef).setUserData("door");
+                            body.setUserData(doorData);
+
+                            shape.dispose();
+                        }
+                        else if ("falseKnightDoor".equals(type)) {
+                            Rectangle rect = ((RectangleMapObject) object).getRectangle();
+
+                            BodyDef bdef = new BodyDef();
+                            bdef.type = BodyDef.BodyType.StaticBody;
+                            bdef.position.set((rect.x + rect.width / 2) / PPM, (rect.y + rect.height / 2) / PPM);
+                            Body body = world.createBody(bdef);
+
+                            PolygonShape shape = new PolygonShape();
+                            shape.setAsBox((rect.width / 2) / PPM, (rect.height / 2) / PPM);
+
+                            FixtureDef fdef = new FixtureDef();
+                            fdef.shape = shape;
+                            fdef.isSensor = true;
+
+                            body.createFixture(fdef).setUserData("falseKnightDoor");
+                            bossDoors.add(new BossDoor(body));
+
+                            shape.dispose();
+                        }
+                    }
+                }
+            }
+        }
     }
 }

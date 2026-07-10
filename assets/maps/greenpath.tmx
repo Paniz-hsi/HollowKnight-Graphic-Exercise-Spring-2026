@@ -332,7 +332,8 @@
  <objectgroup id="8" name="interactables">
   <object id="178" x="5680" y="3312" width="248" height="728">
    <properties>
-    <property name="isLocked" type="bool" value="true"/>
+    <property name="isLocked" type="bool" value="false"/>
+    <property name="targetMap" value="maps/crossroads.tmx"/>
     <property name="type" value="door"/>
    </properties>
   </object>

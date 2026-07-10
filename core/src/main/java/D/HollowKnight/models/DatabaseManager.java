@@ -26,6 +26,9 @@ public class DatabaseManager {
                 "slot INTEGER PRIMARY KEY, has_save BOOLEAN, " +
                 "map_name TEXT, progress INTEGER, spawn_point INTEGER, " +
                 "current_masks INTEGER, max_masks INTEGER, soul INTEGER, unlocked_spawns TEXT)");
+
+            stmt.execute("CREATE TABLE IF NOT EXISTS achievements (" +
+                "name TEXT PRIMARY KEY, is_unlocked BOOLEAN)");
         }
 
         try (Statement stmt = conn.createStatement();
@@ -48,6 +51,26 @@ public class DatabaseManager {
                 try (PreparedStatement pstmt = conn.prepareStatement(insertQuery)) {
                     for (int i = 1; i <= 4; i++) {
                         pstmt.setInt(1, i);
+                        pstmt.executeUpdate();
+                    }
+                }
+            }
+        }
+        try (Statement checkStmt = conn.createStatement();
+             ResultSet rsAch = checkStmt.executeQuery("SELECT COUNT(*) FROM achievements")) {
+
+            if (rsAch.next() && rsAch.getInt(1) == 0) {
+                String[] achievementsList = {
+                    "Completion",
+                    "Speedrun",
+                    "True Hunter",
+                    "Defeat False Knight",
+                    "Resilient Knight"
+                };
+                String insertAchQuery = "INSERT INTO achievements (name, is_unlocked) VALUES (?, 0)";
+                try (PreparedStatement pstmt = conn.prepareStatement(insertAchQuery)) {
+                    for (String ach : achievementsList) {
+                        pstmt.setString(1, ach);
                         pstmt.executeUpdate();
                     }
                 }
@@ -306,6 +329,29 @@ public class DatabaseManager {
             pstmt.setInt(1, slot);
             pstmt.executeUpdate();
             System.out.println("Slot " + slot + " deleted and reset to defaults.");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public boolean isAchievementUnlocked(String name) {
+        try (PreparedStatement pstmt = conn.prepareStatement("SELECT is_unlocked FROM achievements WHERE name = ?")) {
+            pstmt.setString(1, name);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                return rs.getBoolean("is_unlocked");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public void unlockAchievement(String name) {
+        try (PreparedStatement pstmt = conn.prepareStatement("UPDATE achievements SET is_unlocked = 1 WHERE name = ?")) {
+            pstmt.setString(1, name);
+            pstmt.executeUpdate();
+            System.out.println("Achievement Unlocked in DB: " + name);
         } catch (SQLException e) {
             e.printStackTrace();
         }
