@@ -12,6 +12,7 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 
 public class PauseMenuView {
@@ -46,6 +47,10 @@ public class PauseMenuView {
         mainPauseTable.add(settingsBtn).padBottom(20).row();
         mainPauseTable.add(saveExitBtn).row();
         stage.addActor(mainPauseTable);
+        settingsTable = new SettingsTable(btnStyle, mainPauseTable, null, menuController, darkOverlay);
+        settingsTable.setVisible(false);
+        settingsTable.setPosition(0, 0);
+        stage.addActor(settingsTable);
 
         cheatCodesTable = new Table();
         cheatCodesTable.setFillParent(true);
@@ -53,15 +58,28 @@ public class PauseMenuView {
         cheatCodesTable.setVisible(false);
 
         Label.LabelStyle labelStyle = new Label.LabelStyle(btnStyle.font, Color.YELLOW);
-        cheatCodesTable.add(new Label("CHEAT CODES MENU", labelStyle)).padBottom(40).row();
+        cheatCodesTable.add(new Label("CHEAT CODES MENU", labelStyle)).padBottom(30).row();
+
+        Label.LabelStyle textStyle = new Label.LabelStyle(btnStyle.font, Color.WHITE);
+        String cheatsText =
+            "1. Boss Arena Teleport (Ctrl & T): Instantly teleport to the False Knight arena.\n" +
+                "2. Noclip / Spectator (Ctrl & N): Disable gravity, collisions & animations.\n" +
+                "3. Emergency Heal (Ctrl & H): Gain ONE extra health mask.\n" +
+                "4. Refill Soul (Ctrl & M): Instantly and fully refill the Soul vessel.\n" +
+                "5. God Mode (Ctrl & G): Toggle invincibility against spikes and enemies.\n" +
+                "6. Insta-Kill (Ctrl & K): Instantly kill all enemies in the current screen.";
+
+        Label cheatsLabel = new Label(cheatsText, textStyle);
+        cheatsLabel.setAlignment(Align.left);
+
+        cheatsLabel.setWrap(true);
+        cheatsLabel.setFontScale(0.7f);
+
+        cheatCodesTable.add(cheatsLabel).width(1000).padBottom(40).row();
+
         TextButton backFromCheatBtn = new TextButton("BACK", btnStyle);
         cheatCodesTable.add(backFromCheatBtn);
         stage.addActor(cheatCodesTable);
-
-        settingsTable = new SettingsTable(btnStyle, mainPauseTable, null, menuController, darkOverlay);
-        settingsTable.setVisible(false);
-        settingsTable.setPosition(0, 0);
-        stage.addActor(settingsTable);
 
 
         continueBtn.addListener(new ClickListener() {

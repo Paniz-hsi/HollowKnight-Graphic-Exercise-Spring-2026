@@ -39,7 +39,7 @@ public class Zote {
 
     public Zote(float x, float y) {
         this.position = new Vector2(x, y);
-        this.interactBounds = new Rectangle(x - INTERACT_RANGE/2, y - INTERACT_RANGE/2, INTERACT_RANGE * 2, INTERACT_RANGE * 2);
+        this.interactBounds = new Rectangle(x - INTERACT_RANGE/2, y - INTERACT_RANGE/2, INTERACT_RANGE * 2, INTERACT_RANGE);
 
         initDialogues();
     }

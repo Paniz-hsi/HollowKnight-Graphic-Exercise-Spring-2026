@@ -208,7 +208,7 @@ public class Player {
             if (soul >= FOCUS_SOUL_COST && currentMasks < maxMasks) {
 
                 if (!isChargingSoundPlaying) {
-                    AudioManager.getInstance().playSound("focus_health_charging.wav");
+                    AudioManager.getInstance().playSound("focus_health_heal.wav");
                     isChargingSoundPlaying = true;
                 }
 

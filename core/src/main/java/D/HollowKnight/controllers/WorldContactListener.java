@@ -158,12 +158,18 @@ public class WorldContactListener implements ContactListener {
     }
 
     private void applyDamageToEnemy(Fixture enemyFix, int damageAmount, Player p) {
-        if (p != null && p.hasCharm(Charm.HEAVY_BLOW)) {
-            float knockbackDir = p.isFacingRight() ? 5.0f : -5.0f;
-            enemyFix.getBody().applyLinearImpulse(new Vector2(knockbackDir, 1.5f), enemyFix.getBody().getWorldCenter(), true);
-        }
-
         Object enemyData = enemyFix.getBody().getUserData();
+
+        if (p != null && enemyFix.getBody() != null && !(enemyData instanceof FalseKnight)) {
+            float knockbackForce = 5.0f;
+
+            if (p.hasCharm(Charm.HEAVY_BLOW)) {
+                knockbackForce = 10.0f;
+            }
+
+            float direction = p.isFacingRight() ? 1.0f : -1.0f;
+            enemyFix.getBody().setLinearVelocity(new Vector2(direction * knockbackForce, 3.0f));
+        }
 
         if (enemyData instanceof Crawlid) {
             for (int i = 0; i < damageAmount; i++) ((Crawlid) enemyData).takeDamage();
