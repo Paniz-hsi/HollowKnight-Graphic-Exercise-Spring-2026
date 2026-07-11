@@ -59,6 +59,8 @@ public class MapController implements Screen {
     private GameUI gameUI;
     private boolean isPaused = false;
     private PauseMenuView pauseMenuView;
+    private boolean isInventoryOpen = false;
+    private InventoryView inventoryView;
 
     public MapController(GameController mainGame , String mapPath) {
         this.mainGame = mainGame;
@@ -134,7 +136,7 @@ public class MapController implements Screen {
             player.activateCheckpoint(savedSpawnId);
             player.currentMasks = db.getSavedMasks(activeSlot);
             player.soul = db.getSavedSoul(activeSlot);
-
+            inventoryView = new InventoryView(player);
             playerView = new PlayerView();
             FreeTypeFontGenerator gen = new FreeTypeFontGenerator(Gdx.files.internal("Trajans.ttf"));
             FreeTypeFontGenerator.FreeTypeFontParameter param = new FreeTypeFontGenerator.FreeTypeFontParameter();
@@ -156,10 +158,20 @@ public class MapController implements Screen {
 
     @Override
     public void render(float delta) {
+        if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.I) && !isPaused) {
+            isInventoryOpen = !isInventoryOpen;
+        }
+
         if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.ESCAPE)) {
-            if (!isPaused) {
+            if (isInventoryOpen) {
+                isInventoryOpen = false;
+            } else if (!isPaused) {
                 pauseGame();
             }
+        }
+
+        if (isInventoryOpen) {
+            inventoryView.handleInput();
         }
         if (falseKnight != null && falseKnight.currentState == FalseKnight.State.DEATH) {
             if (!isTransitioning) {
@@ -167,7 +179,7 @@ public class MapController implements Screen {
                 triggerEndGame();
             }
         }
-        if (!isPaused) {
+        if (!isPaused && !isInventoryOpen) {
             if (world != null) world.step(1/60f, 6, 2);
             if (player != null && player.needsRespawn()) {
                 Vector2 spawnPos = model.getSpawnPoint(player.getCurrentSpawnPointId());
@@ -345,6 +357,10 @@ public class MapController implements Screen {
         b2dr.render(world, camera.combined);
         if (isPaused && pauseMenuView != null) {
             pauseMenuView.render(delta);
+        } else if (isInventoryOpen && inventoryView != null) { // <--- این خطوط جا مانده بود!
+            batch.begin();
+            inventoryView.render(batch);
+            batch.end();
         }
     }
 
@@ -412,6 +428,17 @@ public class MapController implements Screen {
         DatabaseManager db = menuController.getDatabase();
         int activeSlot = menuController.getCurrentSlot();
 
+        StringBuilder charmsBuilder = new StringBuilder();
+        int count = 0;
+        for (Charm charm : player.equippedCharms) {
+            charmsBuilder.append(charm.name());
+            count++;
+            if (count < player.equippedCharms.size()) {
+                charmsBuilder.append(",");
+            }
+        }
+        String charmsToSave = charmsBuilder.toString();
+
         db.saveGameState(
             activeSlot,
             targetMapPath,
@@ -420,7 +447,8 @@ public class MapController implements Screen {
             player.getUnlockedSpawnsString(),
             player.currentMasks,
             player.maxMasks,
-            player.soul
+            player.soul,
+            charmsToSave
         );
         Gdx.app.postRunnable(new Runnable() {
             @Override

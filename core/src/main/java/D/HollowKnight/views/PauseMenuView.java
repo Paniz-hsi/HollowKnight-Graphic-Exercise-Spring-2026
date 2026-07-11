@@ -3,8 +3,8 @@ package D.HollowKnight.views;
 import D.HollowKnight.controllers.GameController;
 import D.HollowKnight.controllers.MapController;
 import D.HollowKnight.controllers.MenuController;
+import D.HollowKnight.models.Charm;
 import D.HollowKnight.models.DatabaseManager;
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
@@ -97,6 +97,17 @@ public class PauseMenuView {
                 int activeSlot = menuController.getCurrentSlot();
                 String currentMap = mapController.getMapPath();
 
+                StringBuilder charmsBuilder = new StringBuilder();
+                int count = 0;
+                for (Charm charm : mapController.getPlayer().equippedCharms) {
+                    charmsBuilder.append(charm.name());
+                    count++;
+                    // تا زمانی که به آخرین آیتم نرسیده‌ایم، ویرگول اضافه کن
+                    if (count < mapController.getPlayer().equippedCharms.size()) {
+                        charmsBuilder.append(",");
+                    }
+                }
+                String charmsToSave = charmsBuilder.toString();
                 db.saveGameState(
                     activeSlot,
                     currentMap,
@@ -105,7 +116,8 @@ public class PauseMenuView {
                     mapController.getPlayer().getUnlockedSpawnsString(),
                     mapController.getPlayer().currentMasks,
                     mapController.getPlayer().maxMasks,
-                    mapController.getPlayer().soul
+                    mapController.getPlayer().soul,
+                    charmsToSave
                 );
 
                 mainGame.setScreen(new MainMenuView(mainGame));

@@ -83,6 +83,8 @@ public class Player {
     };
     private Random random = new Random();
     private boolean isChargingSoundPlaying = false;
+    public Set<Charm> equippedCharms = new HashSet<>();
+    public final int MAX_NOTCHES = 3;
 
     public Player(float startX, float startY, World world , MapController mapController) {
         currentState = State.IDLE;
@@ -213,7 +215,7 @@ public class Player {
                 isFocusing = true;
                 focusTimer += delta;
 
-                if (focusTimer >= FOCUS_DURATION) {
+                if (focusTimer >= getFocusDuration()) {
                     currentMasks++;
                     soul -= FOCUS_SOUL_COST;
                     focusTimer = 0;
@@ -249,7 +251,7 @@ public class Player {
         if (canMove && Gdx.input.isKeyJustPressed(controller.getKeyDash()) && dashCooldown <= 0 && !isDashing && !isFocusing) {
             isDashing = true;
             dashTimer = DASH_DURATION;
-            dashCooldown = 0.8f;
+            dashCooldown = getDashCooldown();
             attackTimer = 0;
         }
 
@@ -298,7 +300,7 @@ public class Player {
             }
 
             if (Gdx.input.isKeyJustPressed(controller.getKeyAttack()) && attackTimer <= 0) {
-                attackTimer = ATTACK_DURATION;
+                attackTimer = getAttackDuration();
                 landingTimer = 0;
 
                 int index = random.nextInt(swordSounds.length);
@@ -386,7 +388,8 @@ public class Player {
             int index = random.nextInt(soulSounds.length);
             AudioManager.getInstance().playSound(soulSounds[index]);
         }
-        soul = Math.min(soul + 11, MAX_SOUL);
+        int soulGained = hasCharm(Charm.SOUL_CATCHER) ? 16 : 11; // سول بیشتر
+        soul = Math.min(soul + soulGained, MAX_SOUL);
     }
     public void activateCheckpoint(int spawnId) {
         this.currentSpawnPointId = spawnId;
@@ -510,5 +513,32 @@ public class Player {
 
     public void cheatFillSoul() {
         soul = MAX_SOUL;
+    }
+    public boolean hasCharm(Charm charm) {
+        return equippedCharms.contains(charm);
+    }
+    public float getDashCooldown() {
+        return hasCharm(Charm.DASHMASTER) ? 0.4f : 0.8f;
+    }
+
+    public float getDashSpeed() {
+        float speed = DASH_SPEED;
+        return speed;
+    }
+
+
+    public float getAttackDuration() {
+        return hasCharm(Charm.QUICK_SLASH) ? 0.15f : 0.25f;
+    }
+
+
+    public float getFocusDuration() {
+        return hasCharm(Charm.QUICK_FOCUS) ? 0.8f : 1.5f;
+    }
+
+    public int getAttackDamage() {
+        int damage = 1;
+        if (hasCharm(Charm.UNBREAKABLE_STRENGTH)) damage += 1; // دمیج دو برابر
+        return damage;
     }
 }

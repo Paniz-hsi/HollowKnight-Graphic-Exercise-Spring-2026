@@ -1,6 +1,7 @@
 package D.HollowKnight.controllers;
 
 import D.HollowKnight.models.*;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 
 public class WorldContactListener implements ContactListener {
@@ -46,21 +47,18 @@ public class WorldContactListener implements ContactListener {
             HuskHornhead h = getHuskHornheadFromFixture(fixA, fixB, "hornhead_right");
             if (h != null) h.rightEdgeContacts++;
         }
+
         if (isSensorMatch(fixA, fixB, "player", "enemy")) {
             Player player = getPlayerFromFixture(fixA, fixB, "player");
             Fixture enemyFix = fixA.getUserData().equals("enemy") ? fixA : fixB;
+            player.takeDamageFromEnemy(enemyFix.getBody().getPosition().x);
 
-            if (player != null && enemyFix.getBody() != null) {
-                player.takeDamageFromEnemy(enemyFix.getBody().getPosition().x);
-            }
         }
 
         if (isSensorMatch(fixA, fixB, "player", "spike") || isSensorMatch(fixA, fixB, "player", "hazard")) {
             Player player = getPlayerFromFixture(fixA, fixB, "player");
-
             if (player != null) {
                 player.takeDamageFromHazard();
-
             }
         }
 
@@ -72,56 +70,22 @@ public class WorldContactListener implements ContactListener {
                 AudioManager.getInstance().playSound("enemy_damage.wav");
             }
 
-            if (enemyFix.getBody().getUserData() instanceof Crawlid) {
-                ((Crawlid) enemyFix.getBody().getUserData()).takeDamage();
-                if (p != null) { p.enemiesKilled++; p.killedEnemyTypes.add("Crawlid"); }
+            if (p != null) {
+                applyDamageToEnemy(enemyFix, p.getAttackDamage(), p);
+                p.gainSoul();
             }
-            else if (enemyFix.getBody().getUserData() instanceof Mossfly) {
-                ((Mossfly) enemyFix.getBody().getUserData()).takeDamage();
-                if (p != null) { p.enemiesKilled++; p.killedEnemyTypes.add("Mossfly"); }
-            }
-            else if (enemyFix.getBody().getUserData() instanceof HuskHornhead) {
-                ((HuskHornhead) enemyFix.getBody().getUserData()).takeDamage();
-                if (p != null) { p.enemiesKilled++; p.killedEnemyTypes.add("HuskHornhead"); }
-            }
-            else if (enemyFix.getBody().getUserData() instanceof CrystalGuardian) {
-                ((CrystalGuardian) enemyFix.getBody().getUserData()).takeDamage();
-                if (p != null) { p.enemiesKilled++; p.killedEnemyTypes.add("CrystalGuardian"); }
-            }
-            if (enemyFix.getBody().getUserData() instanceof FalseKnight) {
-                FalseKnight boss = (FalseKnight) enemyFix.getBody().getUserData();
-                boolean isMaggot = enemyFix.getUserData().equals("falseKnight_maggot");
-                boss.takeDamage(isMaggot);
-            }
-
-
-            if (p != null) p.gainSoul();
         }
 
         if (isSensorMatch(fixA, fixB, "downAttack", "enemy")) {
             Fixture enemyFix = fixA.getUserData().equals("enemy") ? fixA : fixB;
+            Player p = getPlayerFromFixture(fixA, fixB, "downAttack");
 
             if (!(enemyFix.getBody().getUserData() instanceof FalseKnight)) {
                 AudioManager.getInstance().playSound("enemy_damage.wav");
             }
 
-            if (enemyFix.getBody().getUserData() instanceof Crawlid) {
-                ((Crawlid) enemyFix.getBody().getUserData()).takeDamage();
-            } else if (enemyFix.getBody().getUserData() instanceof Mossfly) {
-                ((Mossfly) enemyFix.getBody().getUserData()).takeDamage();
-            } else if (enemyFix.getBody().getUserData() instanceof HuskHornhead) {
-                ((HuskHornhead) enemyFix.getBody().getUserData()).takeDamage();
-            } else if (enemyFix.getBody().getUserData() instanceof CrystalGuardian) {
-                ((CrystalGuardian) enemyFix.getBody().getUserData()).takeDamage();
-            }
-            if (enemyFix.getBody().getUserData() instanceof FalseKnight) {
-                FalseKnight boss = (FalseKnight) enemyFix.getBody().getUserData();
-                boolean isMaggot = enemyFix.getUserData().equals("falseKnight_maggot");
-                boss.takeDamage(isMaggot);
-            }
-
-            Player p = getPlayerFromFixture(fixA, fixB, "downAttack");
             if (p != null) {
+                applyDamageToEnemy(enemyFix, p.getAttackDamage(), p);
                 p.gainSoul();
                 p.triggerPogoJump();
             }
@@ -139,7 +103,6 @@ public class WorldContactListener implements ContactListener {
 
             if (bodyData instanceof Door) {
                 Door door = (Door) bodyData;
-
                 if (!door.isLocked) {
                     Player p = (Player) playerAttackFix.getBody().getUserData();
                     if (p != null) {
@@ -148,6 +111,7 @@ public class WorldContactListener implements ContactListener {
                 }
             }
         }
+
         if (isSensorMatch(fixA, fixB, "player", "falseKnight_mace")) {
             Player player = getPlayerFromFixture(fixA, fixB, "player");
             Fixture maceFix = fixA.getUserData().equals("falseKnight_mace") ? fixA : fixB;
@@ -161,7 +125,6 @@ public class WorldContactListener implements ContactListener {
                 }
             }
         }
-
 
         if (isSensorMatch(fixA, fixB, "guardian_left", "ground") || isSensorMatch(fixA, fixB, "guardian_left", "platform")) {
             CrystalGuardian g = getGuardianFromFixture(fixA, fixB, "guardian_left");
@@ -191,6 +154,37 @@ public class WorldContactListener implements ContactListener {
                 player.activateCheckpoint(checkpointId);
                 System.out.println("Checkpoint " + checkpointId + " activated! Progress: " + player.getProgressPercentage() + "%");
             }
+        }
+    }
+
+    private void applyDamageToEnemy(Fixture enemyFix, int damageAmount, Player p) {
+        if (p != null && p.hasCharm(Charm.HEAVY_BLOW)) {
+            float knockbackDir = p.isFacingRight() ? 5.0f : -5.0f;
+            enemyFix.getBody().applyLinearImpulse(new Vector2(knockbackDir, 1.5f), enemyFix.getBody().getWorldCenter(), true);
+        }
+
+        Object enemyData = enemyFix.getBody().getUserData();
+
+        if (enemyData instanceof Crawlid) {
+            for (int i = 0; i < damageAmount; i++) ((Crawlid) enemyData).takeDamage();
+            if (p != null) { p.enemiesKilled++; p.killedEnemyTypes.add("Crawlid"); }
+        }
+        else if (enemyData instanceof Mossfly) {
+            for (int i = 0; i < damageAmount; i++) ((Mossfly) enemyData).takeDamage();
+            if (p != null) { p.enemiesKilled++; p.killedEnemyTypes.add("Mossfly"); }
+        }
+        else if (enemyData instanceof HuskHornhead) {
+            for (int i = 0; i < damageAmount; i++) ((HuskHornhead) enemyData).takeDamage();
+            if (p != null) { p.enemiesKilled++; p.killedEnemyTypes.add("HuskHornhead"); }
+        }
+        else if (enemyData instanceof CrystalGuardian) {
+            for (int i = 0; i < damageAmount; i++) ((CrystalGuardian) enemyData).takeDamage();
+            if (p != null) { p.enemiesKilled++; p.killedEnemyTypes.add("CrystalGuardian"); }
+        }
+        else if (enemyData instanceof FalseKnight) {
+            FalseKnight boss = (FalseKnight) enemyData;
+            boolean isMaggot = enemyFix.getUserData().equals("falseKnight_maggot");
+            for (int i = 0; i < damageAmount; i++) boss.takeDamage(isMaggot);
         }
     }
 

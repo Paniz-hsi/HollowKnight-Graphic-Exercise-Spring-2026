@@ -239,13 +239,16 @@ public class GameUI {
             if (zote != null && zote.isDialogueActive()) {
                 String text = zote.getDisplayedText();
 
+                float screenWidth = uiViewport.getWorldWidth();
+
                 float boxWidth = 600f;
                 float boxHeight = 150f;
-                float boxX = (1280 - boxWidth) / 2f;
+                float boxX = (screenWidth - boxWidth) / 2f;
                 float boxY = 50f;
+
                 uiBatch.draw(dialogueBoxTexture, boxX, boxY, boxWidth, boxHeight);
 
-                font.draw(uiBatch, text, boxX + 30, boxY + boxHeight - 20);
+                font.draw(uiBatch, text, boxX + 30, boxY + boxHeight - 40);
             }
         }
         uiBatch.end();

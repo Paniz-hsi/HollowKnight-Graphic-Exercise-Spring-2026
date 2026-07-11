@@ -15,20 +15,21 @@ public class DatabaseManager {
     }
 
     private void createTables() throws SQLException {
-        try (Statement stmt = conn.createStatement()) {
-            stmt.execute("CREATE TABLE IF NOT EXISTS settings (" +
-                "id INTEGER PRIMARY KEY, volume INTEGER, music_on BOOLEAN, " +
-                "sfx_on BOOLEAN, brightness INTEGER, language TEXT, " +
-                "key_up INTEGER, key_down INTEGER, key_left INTEGER, key_right INTEGER, " +
-                "key_dash INTEGER, key_attack INTEGER, key_jump INTEGER)");
+            try (Statement stmt = conn.createStatement()) {
+                stmt.execute("CREATE TABLE IF NOT EXISTS settings (" +
+                    "id INTEGER PRIMARY KEY, volume INTEGER, music_on BOOLEAN, " +
+                    "sfx_on BOOLEAN, brightness INTEGER, language TEXT, " +
+                    "key_up INTEGER, key_down INTEGER, key_left INTEGER, key_right INTEGER, " +
+                    "key_dash INTEGER, key_attack INTEGER, key_jump INTEGER)");
 
-            stmt.execute("CREATE TABLE IF NOT EXISTS saves (" +
-                "slot INTEGER PRIMARY KEY, has_save BOOLEAN, " +
-                "map_name TEXT, progress INTEGER, spawn_point INTEGER, " +
-                "current_masks INTEGER, max_masks INTEGER, soul INTEGER, unlocked_spawns TEXT)");
+                stmt.execute("CREATE TABLE IF NOT EXISTS saves (" +
+                    "slot INTEGER PRIMARY KEY, has_save BOOLEAN, " +
+                    "map_name TEXT, progress INTEGER, spawn_point INTEGER, " +
+                    "current_masks INTEGER, max_masks INTEGER, soul INTEGER, " +
+                    "unlocked_spawns TEXT, equipped_charms TEXT)");
 
-            stmt.execute("CREATE TABLE IF NOT EXISTS achievements (" +
-                "name TEXT PRIMARY KEY, is_unlocked BOOLEAN)");
+                stmt.execute("CREATE TABLE IF NOT EXISTS achievements (" +
+                    "name TEXT PRIMARY KEY, is_unlocked BOOLEAN)");
         }
 
         try (Statement stmt = conn.createStatement();
@@ -75,6 +76,47 @@ public class DatabaseManager {
                     }
                 }
             }
+        }
+    }
+
+    public void saveGameState(int slot, String mapName, int spawnPointId, int progress, String unlockedSpawnsStr, int currentMasks, int maxMasks, int soul, String equippedCharms) {
+        String sql = "UPDATE saves SET has_save = 1, map_name = ?, progress = ?, spawn_point = ?, unlocked_spawns = ?, current_masks = ?, max_masks = ?, soul = ?, equipped_charms = ? WHERE slot = ?";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, mapName);
+            pstmt.setInt(2, progress);
+            pstmt.setInt(3, spawnPointId);
+            pstmt.setString(4, unlockedSpawnsStr);
+            pstmt.setInt(5, currentMasks);
+            pstmt.setInt(6, maxMasks);
+            pstmt.setInt(7, soul);
+            pstmt.setString(8, equippedCharms);
+            pstmt.setInt(9, slot);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public String getSavedCharms(int slot) {
+        try (PreparedStatement pstmt = conn.prepareStatement("SELECT equipped_charms FROM saves WHERE slot = ?")) {
+            pstmt.setInt(1, slot);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                String charms = rs.getString("equipped_charms");
+                return (charms != null) ? charms : "";
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+        return "";
+    }
+
+    public void deleteSaveSlot(int slot) {
+        String sql = "UPDATE saves SET has_save = 0, map_name = 'UNKNOWN', progress = 0, spawn_point = 1, unlocked_spawns = '1', current_masks = 5, max_masks = 5, soul = 0, equipped_charms = '' WHERE slot = ?";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, slot);
+            pstmt.executeUpdate();
+            System.out.println("Slot " + slot + " deleted and reset to defaults.");
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 
@@ -261,22 +303,6 @@ public class DatabaseManager {
         } catch (SQLException e) { e.printStackTrace(); }
     }
 
-    public void saveGameState(int slot, String mapName, int spawnPointId, int progress, String unlockedSpawnsStr, int currentMasks, int maxMasks, int soul) {
-        String sql = "UPDATE saves SET has_save = 1, map_name = ?, progress = ?, spawn_point = ?, unlocked_spawns = ?, current_masks = ?, max_masks = ?, soul = ? WHERE slot = ?";
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, mapName);
-            pstmt.setInt(2, progress);
-            pstmt.setInt(3, spawnPointId);
-            pstmt.setString(4, unlockedSpawnsStr);
-            pstmt.setInt(5, currentMasks);
-            pstmt.setInt(6, maxMasks);
-            pstmt.setInt(7, soul);
-            pstmt.setInt(8, slot);
-            pstmt.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
 
     public String getSavedUnlockedSpawns(int slot) {
         try (PreparedStatement pstmt = conn.prepareStatement("SELECT unlocked_spawns FROM saves WHERE slot = ?")) {
@@ -323,16 +349,6 @@ public class DatabaseManager {
         return 0;
     }
 
-    public void deleteSaveSlot(int slot) {
-        String sql = "UPDATE saves SET has_save = 0, map_name = 'UNKNOWN', progress = 0, spawn_point = 1, unlocked_spawns = '1', current_masks = 5, max_masks = 5, soul = 0 WHERE slot = ?";
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, slot);
-            pstmt.executeUpdate();
-            System.out.println("Slot " + slot + " deleted and reset to defaults.");
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
 
     public boolean isAchievementUnlocked(String name) {
         try (PreparedStatement pstmt = conn.prepareStatement("SELECT is_unlocked FROM achievements WHERE name = ?")) {
