@@ -61,7 +61,7 @@ public class HuskHornheadView {
             float drawY = husk.getPosition().y - (visualHeight / 2) + 0.1f;
 
             if (husk.getCurrentState() == HuskHornhead.State.DEAD_GROUND) {
-                drawY = husk.getPosition().y - 0.25f;
+                drawY = husk.getPosition().y - 0.50f;
             }
 
             batch.draw(currentFrame, drawX, drawY, visualWidth, visualHeight);

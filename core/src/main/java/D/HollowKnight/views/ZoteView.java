@@ -14,6 +14,7 @@ public class ZoteView {
 
     private final float ZOTE_WIDTH = 1.0f;
     private final float ZOTE_HEIGHT = 0.60f;
+    private boolean faceLeft = true;
 
     public ZoteView() {
         atlas = new TextureAtlas("knight_animations.atlas");
@@ -29,10 +30,14 @@ public class ZoteView {
             talkAnimation.getKeyFrame(stateTime, true) :
             idleAnimation.getKeyFrame(stateTime, true);
 
+        if (currentFrame.isFlipX() != faceLeft) {
+            currentFrame.flip(true, false);
+        }
+
         if (currentFrame != null) {
             batch.draw(currentFrame,
                 zote.getPosition().x - (ZOTE_WIDTH / 2f),
-                (zote.getPosition().y - 0.15f),
+                (zote.getPosition().y - 0.08f),
                 ZOTE_WIDTH,
                 ZOTE_HEIGHT);
         }

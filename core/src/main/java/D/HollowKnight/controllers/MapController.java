@@ -10,13 +10,17 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
+import com.badlogic.gdx.maps.MapLayer;
+import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
@@ -182,33 +186,49 @@ public class MapController implements Screen {
         if (!isPaused && !isInventoryOpen) {
             if (world != null) world.step(1/60f, 6, 2);
             if (player != null && player.needsRespawn()) {
-                Vector2 spawnPos = model.getSpawnPoint(player.getCurrentSpawnPointId());
-                if (spawnPos != null) {
-                    player.respawnAt(spawnPos);
-                    if (menuController.isMusicOn()) {
-                        String mapMusic = menuController.getMusicPathForMap(mapPath);
-                        AudioManager.getInstance().playMusic(mapMusic, menuController.getVolume() / 100f);
-                    }
+                if (player.currentMasks <= 0) {
+                    player.setNeedsRespawn(false);
+                    Gdx.app.postRunnable(() -> {
+                        mainGame.setScreen(new MapController(mainGame, mapPath));
+                        dispose();
+                    });
+                    return;
                 }
-                player.setNeedsRespawn(false);
 
-                if (model.getBossDoors() != null) {
-                    for (BossDoor bossDoor : model.getBossDoors()) {
-                        bossDoor.isClosed = false;
-                        for (com.badlogic.gdx.physics.box2d.Fixture fixture : bossDoor.body.getFixtureList()) {
-                            fixture.setSensor(true);
+                else {
+                    Vector2 spawnPos = model.getSpawnPoint(player.getCurrentSpawnPointId());
+                    if (spawnPos != null) {
+                        player.respawnAt(spawnPos);
+
+                        if (menuController.isMusicOn()) {
+                            String mapMusic = menuController.getMusicPathForMap(mapPath);
+                            AudioManager.getInstance().playMusic(mapMusic, menuController.getVolume() / 100f);
                         }
                     }
-                }
-
-                if (falseKnight != null) {
-                    falseKnight.hp = 12; // جون باس پر میشه
-                    falseKnight.isPhase2 = false;
-                    falseKnight.currentState = FalseKnight.State.IDLE;
-                    falseKnight.isMaceActive = false;
-                    falseKnight.updateMaceHitbox();
+                    player.setNeedsRespawn(false);
                 }
             }
+
+            Array<BreakableWall> wallsToRemove = new Array<>();
+
+            for (BreakableWall wall : model.breakableWalls) {
+                if (wall.isDestroyed) {
+                    world.destroyBody(wall.body);
+
+                    if (wall.visualTargetName != null && !wall.visualTargetName.isEmpty()) {
+                        for (MapLayer layer : map.getLayers()) {
+                            MapObject visualObject = layer.getObjects().get(wall.visualTargetName);
+                            if (visualObject != null) {
+                                layer.getObjects().remove(visualObject);
+                            }
+                        }
+                    }
+
+                    wallsToRemove.add(wall);
+                }
+            }
+            model.breakableWalls.removeAll(wallsToRemove, true);
+
             if (player != null) {
                 player.playTime += delta;
                 player.update(delta, menuController);
@@ -301,11 +321,29 @@ public class MapController implements Screen {
                 player.clearPendingMapTransition();
                 openDoorAndTransition(nextMap);
             }
-            defaultCameraX = player.getX();
-            defaultCameraY = player.getY();
 
             defaultCameraX = player.getX();
             defaultCameraY = player.getY();
+
+            if (player.getCurrentSpawnPointId() == 5) {
+                float roomLeft = 67f / MapModel.PPM;
+                float roomRight = 4541f / MapModel.PPM;
+
+                float roomBottom = 1818f / MapModel.PPM;
+                float roomTop = 5000 / MapModel.PPM;
+
+                float halfCamWidth = 4.0f / 2f;
+                float halfCamHeight = 2.08f / 2f;
+
+                float minCamX = roomLeft + halfCamWidth;
+                float maxCamX = roomRight - halfCamWidth;
+
+                float minCamY = roomBottom + halfCamHeight;
+                float maxCamY = roomTop - halfCamHeight;
+
+                defaultCameraX = MathUtils.clamp(defaultCameraX, minCamX, maxCamX);
+                defaultCameraY = MathUtils.clamp(defaultCameraY, minCamY, maxCamY);
+            }
 
             if (shakeTimer > 0) {
                 float offsetX = (float) (Math.random() - 0.5f) * shakeIntensity;
@@ -357,7 +395,7 @@ public class MapController implements Screen {
         b2dr.render(world, camera.combined);
         if (isPaused && pauseMenuView != null) {
             pauseMenuView.render(delta);
-        } else if (isInventoryOpen && inventoryView != null) { // <--- این خطوط جا مانده بود!
+        } else if (isInventoryOpen && inventoryView != null) {
             batch.begin();
             inventoryView.render(batch);
             batch.end();
@@ -462,7 +500,6 @@ public class MapController implements Screen {
         DatabaseManager db = menuController.getDatabase();
 
         db.unlockAchievement("Completion");
-
         db.unlockAchievement("Defeat False Knight");
 
         if (player.currentMasks >= 3) {
@@ -473,12 +510,29 @@ public class MapController implements Screen {
             db.unlockAchievement("Speedrun");
         }
 
-        if (player.killedEnemyTypes.size() >= 4) {
+        int deadEnemiesCount = 0;
+
+        if (crawlid != null && crawlid.isDead()) deadEnemiesCount++;
+        if (mossfly != null && mossfly.isDead()) deadEnemiesCount++;
+        if (husk != null && husk.isDead()) deadEnemiesCount++;
+        if (crystalGuardian != null && crystalGuardian.isDead()) deadEnemiesCount++;
+        if (falseKnight != null && falseKnight.isDead()) deadEnemiesCount++;
+
+        System.out.println("End Game Check: Total dead enemies found in this run = " + deadEnemiesCount);
+
+        if (deadEnemiesCount >= 5) {
             db.unlockAchievement("True Hunter");
+            System.out.println("Achievement Unlocked: True Hunter!");
         }
 
+        if (menuController != null && menuController.isMusicOn()) {
+            String endMusic = "end.mp3";
+            AudioManager.getInstance().playMusic(endMusic, menuController.getVolume() / 100f);
+        }
+
+        int finalDeadEnemiesCount = deadEnemiesCount;
         Gdx.app.postRunnable(() -> {
-            mainGame.setScreen(new EndGameScreen(mainGame, player));
+            mainGame.setScreen(new EndGameScreen(mainGame, player , finalDeadEnemiesCount));
             dispose();
         });
     }

@@ -19,6 +19,7 @@ public class Crawlid {
     private boolean isTurning = false;
     private float turnTimer = 0;
     private final float TURN_DURATION = 0.5f;
+    public float knockbackTimer = 0;
 
     public Crawlid(World world, float x, float y) {
         currentState = State.WALKING;
@@ -66,6 +67,10 @@ public class Crawlid {
 
     public void update(float delta) {
         stateTimer += delta;
+        if (knockbackTimer > 0) {
+            knockbackTimer -= delta;
+            return;
+        }
 
         if (isDead) {
             boolean sensorsTouchGround = (leftEdgeContacts > 0 || rightEdgeContacts > 0) && body.getLinearVelocity().y <= 0;

@@ -28,6 +28,7 @@ public class FalseKnight {
     private float decisionCooldown = 2.0f;
     public boolean isFacingRight = false;
     public boolean isMaceActive = false;
+    private boolean isDead = false;
 
     private int recentDamageCount = 0;
     private float damageTimer = 0;
@@ -45,7 +46,7 @@ public class FalseKnight {
         body = world.createBody(bdef);
 
         PolygonShape shape = new PolygonShape();
-        shape.setAsBox(0.45f, 0.7f);
+        shape.setAsBox(0.45f, 0.5f, new Vector2(0, -0.2f), 0);
         FixtureDef fdef = new FixtureDef();
         fdef.shape = shape;
         body.createFixture(fdef).setUserData("enemy");
@@ -53,7 +54,7 @@ public class FalseKnight {
         shape.dispose();
 
         PolygonShape maceShape = new PolygonShape();
-        maceShape.setAsBox(0.5f, 0.5f, new Vector2(-0.8f, 0), 0);
+        maceShape.setAsBox(0.5f, 0.1f, new Vector2(0, 0), 0);
         FixtureDef maceDef = new FixtureDef();
         maceDef.shape = maceShape;
         maceDef.isSensor = true;
@@ -275,6 +276,7 @@ public class FalseKnight {
             triggerStun();
         } else if (hp <= 0) {
             currentState = State.DEATH;
+            isDead = true;
             stateTimer = 0;
         }
     }
@@ -307,5 +309,9 @@ public class FalseKnight {
 
         Filter filter = maceFixture.getFilterData();
         maceFixture.setFilterData(filter);
+    }
+
+    public boolean isDead() {
+        return isDead;
     }
 }

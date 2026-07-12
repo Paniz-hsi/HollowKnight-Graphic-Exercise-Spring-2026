@@ -31,6 +31,7 @@ public class HuskHornhead {
     public int rightEdgeContacts = 0;
 
     private final float VISION_RANGE = 6.0f;
+    public float knockbackTimer = 0;
 
     public HuskHornhead(World world, float x, float y) {
         currentState = State.IDLE;
@@ -71,6 +72,10 @@ public class HuskHornhead {
 
     public void update(float delta, Player player) {
         stateTimer += delta;
+        if (knockbackTimer > 0) {
+            knockbackTimer -= delta;
+            return;
+        }
 
         if (isDead) {
             if (body.getLinearVelocity().y < -0.1f) hasStartedFalling = true;

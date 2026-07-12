@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="1000" height="1000" tilewidth="8" tileheight="8" infinite="0" nextlayerid="18" nextobjectid="242">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="1000" height="1000" tilewidth="8" tileheight="8" infinite="0" nextlayerid="18" nextobjectid="243">
  <tileset firstgid="1" name="platform" tilewidth="1774" tileheight="887" tilecount="32" columns="0">
   <grid orientation="orthogonal" width="1" height="1"/>
   <tile id="0">
@@ -288,11 +288,6 @@
   <object id="135" gid="39" x="2912" y="2832" width="344" height="184" rotation="90"/>
   <object id="40" gid="39" x="448" y="5744" width="262" height="152"/>
   <object id="37" gid="25" x="-56" y="4552" width="1648" height="772"/>
-  <object id="41" name="breakableFloor" gid="26" x="2608" y="4320" width="552" height="1128" rotation="-90">
-   <properties>
-    <property name="isBreakable" type="bool" value="true"/>
-   </properties>
-  </object>
   <object id="91" gid="29" x="-48" y="7000" width="1008" height="643"/>
   <object id="92" gid="29" x="800" y="7000" width="1008" height="643"/>
   <object id="93" gid="29" x="1664" y="6992" width="1008" height="643"/>
@@ -342,6 +337,13 @@
     <property name="hp" type="int" value="3"/>
     <property name="isBreakable" type="bool" value="true"/>
     <property name="type" value="floor"/>
+    <property name="visualTarget" value="rock"/>
+   </properties>
+  </object>
+  <object id="41" name="rock" gid="26" x="2576" y="4320" width="552" height="1128" rotation="-90">
+   <properties>
+    <property name="Name" value="rock"/>
+    <property name="isBreakable" type="bool" value="true"/>
    </properties>
   </object>
  </objectgroup>
@@ -466,6 +468,9 @@
    <point/>
   </object>
   <object id="241" name="mossfly" x="3632" y="4496">
+   <point/>
+  </object>
+  <object id="242" name="zote" x="384" y="3776">
    <point/>
   </object>
  </objectgroup>

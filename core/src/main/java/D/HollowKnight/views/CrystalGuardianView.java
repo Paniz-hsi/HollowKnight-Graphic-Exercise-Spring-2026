@@ -59,7 +59,7 @@ public class CrystalGuardianView {
             float drawY = guardian.getPosition().y - (visualHeight / 2) - 0.1f;
             float drawX = guardian.getPosition().x - (visualWidth / 2);
             if (guardian.getCurrentState() == CrystalGuardian.State.DEAD_GROUND) {
-                drawY = guardian.getPosition().y - 0.35f;
+                drawY = guardian.getPosition().y - 0.45f;
             }
 
             batch.draw(currentFrame, drawX, drawY, visualWidth, visualHeight);

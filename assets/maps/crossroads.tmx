@@ -301,10 +301,10 @@
   <object id="197" x="6504" y="3448" width="168" height="32"/>
  </objectgroup>
  <objectgroup id="4" name="spawns">
-  <object id="13" name="zote" x="3016" y="1664">
+  <object id="13" name="zote" x="656" y="1720">
    <point/>
   </object>
-  <object id="14" x="632" y="1656">
+  <object id="14" x="2224" y="1712">
    <properties>
     <property name="id" type="int" value="1"/>
    </properties>
@@ -331,7 +331,7 @@
   <object id="127" name="falseKnight" x="864" y="3928">
    <point/>
   </object>
-  <object id="185" x="3992" y="3896">
+  <object id="185" x="2640" y="3960">
    <properties>
     <property name="id" type="int" value="5"/>
    </properties>

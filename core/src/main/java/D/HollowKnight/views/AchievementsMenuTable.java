@@ -47,10 +47,10 @@ public class AchievementsMenuTable extends Table {
         boolean masksUnlocked = db.isAchievementUnlocked("Resilient Knight");
 
         addAchievementRow("1. Completion : Finish the game", compUnlocked, style);
-        addAchievementRow("2. Speedrun : Finish game under 1 hour", speedUnlocked, style);
+        addAchievementRow("2. Speedrun : Finish game under 30 minutes", speedUnlocked, style);
         addAchievementRow("3. True Hunter : Kill all types of enemies", hunterUnlocked, style);
         addAchievementRow("4. Defeat False Knight : Defeat False Knight", knightUnlocked, style);
-        addAchievementRow("5. Resilient Knight : Finish game with 3+ masks", masksUnlocked, style);
+        addAchievementRow("5. Resilient Knight : Finish game with more than 3 masks", masksUnlocked, style);
 
         TextButton backBtn = new TextButton("BACK", style);
         backBtn.addListener(new ClickListener() {

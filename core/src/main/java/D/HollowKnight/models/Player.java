@@ -20,7 +20,6 @@ public class Player {
     private AttackDirection currentAttackDir = AttackDirection.SIDE;
 
     public int deathCount = 0;
-    public int enemiesKilled = 0;
     public float playTime = 0f;
     public Set<String> killedEnemyTypes = new HashSet<>();
     private Body body;
@@ -143,10 +142,7 @@ public class Player {
 
             if (stateTimer > 2.5f) {
                 isDead = false;
-                currentMasks = 5;
                 currentState = State.IDLE;
-
-                currentSpawnPointId = 1;
                 needsRespawn = true;
             }
             return;
@@ -528,17 +524,17 @@ public class Player {
 
 
     public float getAttackDuration() {
-        return hasCharm(Charm.QUICK_SLASH) ? 0.15f : 0.25f;
+        return hasCharm(Charm.QUICK_SLASH) ? 0.15f : ATTACK_DURATION;
     }
 
 
     public float getFocusDuration() {
-        return hasCharm(Charm.QUICK_FOCUS) ? 0.8f : 1.5f;
+        return hasCharm(Charm.QUICK_FOCUS) ? 0.8f : FOCUS_DURATION;
     }
 
     public int getAttackDamage() {
         int damage = 1;
-        if (hasCharm(Charm.UNBREAKABLE_STRENGTH)) damage += 1; // دمیج دو برابر
+        if (hasCharm(Charm.UNBREAKABLE_STRENGTH)) damage += 1;
         return damage;
     }
 }

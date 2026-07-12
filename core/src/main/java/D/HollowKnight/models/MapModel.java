@@ -24,6 +24,7 @@ public class MapModel {
     private Vector2 zoteSpawn;
     private Array<BossDoor> bossDoors = new Array<>();
     public Array<BossDoor> getBossDoors() { return bossDoors; }
+    public Array<BreakableWall> breakableWalls = new Array<>();
 
     public MapModel(World world, TiledMap map) {
         this.world = world;
@@ -64,21 +65,38 @@ public class MapModel {
             }
         }
 
-        /*if (map.getLayers().get("interactables") != null) {
+        if (map.getLayers().get("interactables") != null) {
             for (MapObject object : map.getLayers().get("interactables").getObjects().getByType(RectangleMapObject.class)) {
-                Rectangle rect = ((RectangleMapObject) object).getRectangle();
-                if (rect.getWidth() == 0 || rect.getHeight() == 0) {
-                    continue;
-                }
+                if (object instanceof com.badlogic.gdx.maps.objects.RectangleMapObject && object.getProperties().containsKey("isBreakable")) {
+                    boolean isBreakable = object.getProperties().get("isBreakable", Boolean.class);
 
-                if (object.getProperties().containsKey("isBreakable")) {
-                    createStaticBody(rect, false, "breakable_wall");
-                } else if (object.getProperties().containsKey("type") &&
-                    object.getProperties().get("type", String.class).equals("door")) {
-                    createStaticBody(rect, false, "door");
+                    if (isBreakable) {
+                        Rectangle rect = ((RectangleMapObject) object).getRectangle();
+                        int hp = object.getProperties().containsKey("hp") ? object.getProperties().get("hp", Integer.class) : 3;
+                        String targetName = object.getProperties().get("visualTarget", String.class);
+
+                        BodyDef bdef = new BodyDef();
+                        bdef.type = BodyDef.BodyType.StaticBody;
+                        bdef.position.set((rect.getX() + rect.getWidth() / 2) / PPM, (rect.getY() + rect.getHeight() / 2) / PPM);
+
+                        Body body = world.createBody(bdef);
+                        PolygonShape shape = new PolygonShape();
+                        shape.setAsBox((rect.getWidth() / 2) / PPM, (rect.getHeight() / 2) / PPM);
+
+                        FixtureDef fdef = new FixtureDef();
+                        fdef.shape = shape;
+
+                        Fixture fixture = body.createFixture(fdef);
+                        fixture.setUserData("breakable");
+                        shape.dispose();
+
+                        BreakableWall breakableWall = new BreakableWall(body, hp, targetName);
+                        body.setUserData(breakableWall);
+                        breakableWalls.add(breakableWall);
+                    }
                 }
             }
-        }*/
+        }
 
         if (map.getLayers().get("spawns") != null) {
             for (MapObject object : map.getLayers().get("spawns").getObjects().getByType(PointMapObject.class)) {

@@ -1,6 +1,7 @@
 package D.HollowKnight.views;
 
 import D.HollowKnight.controllers.GameController;
+import D.HollowKnight.controllers.MapController;
 import D.HollowKnight.models.Player;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
@@ -21,7 +22,7 @@ public class EndGameScreen implements Screen {
     private Stage stage;
     private BitmapFont font;
 
-    public EndGameScreen(GameController mainGame, Player player) {
+    public EndGameScreen(GameController mainGame, Player player , int enemiesKilled) {
         this.mainGame = mainGame;
         stage = new Stage(new FitViewport(1280, 720));
         Gdx.input.setInputProcessor(stage);
@@ -48,7 +49,7 @@ public class EndGameScreen implements Screen {
 
         Label titleLabel = new Label("BOSS DEFEATED!", new Label.LabelStyle(font, Color.GOLD));
         Label deathsLabel = new Label("Total Deaths: " + player.deathCount, labelStyle);
-        Label killsLabel = new Label("Enemies Killed: " + player.enemiesKilled, labelStyle);
+        Label killsLabel = new Label("Enemies Killed: " + enemiesKilled, labelStyle);
         Label timeLabel = new Label("Total Time: " + timeStr, labelStyle);
 
         TextButton restartBtn = new TextButton("RESTART GAME", btnStyle);
@@ -57,7 +58,7 @@ public class EndGameScreen implements Screen {
         restartBtn.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                mainGame.setScreen(new D.HollowKnight.controllers.MapController(mainGame, "MAPS/CROSSROADS.tmx"));
+                mainGame.setScreen(new MapController(mainGame, "maps/crossroads.tmx"));
             }
         });
 
@@ -68,7 +69,6 @@ public class EndGameScreen implements Screen {
             }
         });
 
-        // چیدمان در جدول
         table.add(titleLabel).padBottom(40).row();
         table.add(deathsLabel).padBottom(20).row();
         table.add(killsLabel).padBottom(20).row();

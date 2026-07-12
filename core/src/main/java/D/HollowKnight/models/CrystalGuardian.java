@@ -29,6 +29,7 @@ public class CrystalGuardian {
 
     public int leftEdgeContacts = 0;
     public int rightEdgeContacts = 0;
+    public float knockbackTimer = 0;
 
     public CrystalGuardian(World world, float x, float y) {
         currentState = State.IDLE;
@@ -77,6 +78,11 @@ public class CrystalGuardian {
 
     public void update(float delta, Player player) {
         stateTimer += delta;
+
+        if (knockbackTimer > 0) {
+            knockbackTimer -= delta;
+            return;
+        }
 
         if (isDead) {
             if (body.getLinearVelocity().y < -0.1f) hasStartedFalling = true;

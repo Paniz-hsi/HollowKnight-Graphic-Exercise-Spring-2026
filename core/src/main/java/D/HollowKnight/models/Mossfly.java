@@ -24,6 +24,8 @@ public class Mossfly {
     private float startY;
     private final float ROOM_RADIUS_X = 5.0f;
     private final float ROOM_RADIUS_Y = 1.0f;
+
+    public float knockbackTimer = 0;
     public Mossfly(World world, float x, float y) {
         currentState = State.HIDDEN;
         stateTimer = 0;
@@ -52,6 +54,11 @@ public class Mossfly {
 
     public void update(float delta, Player player) {
         stateTimer += delta;
+
+        if (knockbackTimer > 0) {
+            knockbackTimer -= delta;
+            return;
+        }
 
         if (isDead) {
             if (stateTimer > 0.5f && Math.abs(body.getLinearVelocity().y) < 0.05f) {

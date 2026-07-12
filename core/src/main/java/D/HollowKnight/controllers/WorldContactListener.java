@@ -112,6 +112,21 @@ public class WorldContactListener implements ContactListener {
             }
         }
 
+        if (isSensorMatch(fixA, fixB, "attack", "breakable") || isSensorMatch(fixA, fixB, "downAttack", "breakable")) {
+            Fixture wallFix = fixA.getUserData().equals("breakable") ? fixA : fixB;
+            Fixture attackFix = fixA.getUserData().equals("breakable") ? fixB : fixA;
+
+            if (wallFix.getBody().getUserData() instanceof BreakableWall) {
+                BreakableWall wall = (BreakableWall) wallFix.getBody().getUserData();
+                wall.takeDamage();
+
+                if (attackFix.getUserData().equals("downAttack")) {
+                    Player p = getPlayerFromFixture(attackFix, attackFix, "downAttack");
+                    if (p != null) p.triggerPogoJump();
+                }
+            }
+        }
+
         if (isSensorMatch(fixA, fixB, "player", "falseKnight_mace")) {
             Player player = getPlayerFromFixture(fixA, fixB, "player");
             Fixture maceFix = fixA.getUserData().equals("falseKnight_mace") ? fixA : fixB;
@@ -161,31 +176,44 @@ public class WorldContactListener implements ContactListener {
         Object enemyData = enemyFix.getBody().getUserData();
 
         if (p != null && enemyFix.getBody() != null && !(enemyData instanceof FalseKnight)) {
-            float knockbackForce = 5.0f;
+            float knockbackForce = 4.0f;
 
             if (p.hasCharm(Charm.HEAVY_BLOW)) {
-                knockbackForce = 10.0f;
+                knockbackForce = 8.0f;
             }
 
             float direction = p.isFacingRight() ? 1.0f : -1.0f;
             enemyFix.getBody().setLinearVelocity(new Vector2(direction * knockbackForce, 3.0f));
+
+            if (enemyData instanceof Crawlid) {
+                ((Crawlid) enemyData).knockbackTimer = 0.3f;
+            }
+            else if (enemyData instanceof Mossfly) {
+                ((Mossfly) enemyData).knockbackTimer = 0.3f;
+            }
+            else if (enemyData instanceof HuskHornhead) {
+                ((HuskHornhead) enemyData).knockbackTimer = 0.3f;
+            }
+            else if (enemyData instanceof CrystalGuardian) {
+                ((CrystalGuardian) enemyData).knockbackTimer = 0.3f;
+            }
         }
 
         if (enemyData instanceof Crawlid) {
             for (int i = 0; i < damageAmount; i++) ((Crawlid) enemyData).takeDamage();
-            if (p != null) { p.enemiesKilled++; p.killedEnemyTypes.add("Crawlid"); }
+            if (p != null) { p.killedEnemyTypes.add("Crawlid"); }
         }
         else if (enemyData instanceof Mossfly) {
             for (int i = 0; i < damageAmount; i++) ((Mossfly) enemyData).takeDamage();
-            if (p != null) { p.enemiesKilled++; p.killedEnemyTypes.add("Mossfly"); }
+            if (p != null) {p.killedEnemyTypes.add("Mossfly"); }
         }
         else if (enemyData instanceof HuskHornhead) {
             for (int i = 0; i < damageAmount; i++) ((HuskHornhead) enemyData).takeDamage();
-            if (p != null) { p.enemiesKilled++; p.killedEnemyTypes.add("HuskHornhead"); }
+            if (p != null) { p.killedEnemyTypes.add("HuskHornhead"); }
         }
         else if (enemyData instanceof CrystalGuardian) {
             for (int i = 0; i < damageAmount; i++) ((CrystalGuardian) enemyData).takeDamage();
-            if (p != null) { p.enemiesKilled++; p.killedEnemyTypes.add("CrystalGuardian"); }
+            if (p != null) { p.killedEnemyTypes.add("CrystalGuardian"); }
         }
         else if (enemyData instanceof FalseKnight) {
             FalseKnight boss = (FalseKnight) enemyData;
