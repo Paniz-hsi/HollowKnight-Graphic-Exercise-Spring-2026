@@ -41,7 +41,7 @@ public class FalseKnightView {
         attackRecoverAnim = new Animation<>(0.1f, atlas.findRegions("Attack Recover False"), Animation.PlayMode.NORMAL);
         jumpAttackAnim = new Animation<>(0.08f, atlas.findRegions("Jump Attack False"), Animation.PlayMode.NORMAL);
         deathFallAnim = new Animation<>(0.1f, atlas.findRegions("DeathFall"), Animation.PlayMode.NORMAL);
-        deathLandAnim = new Animation<>(0.1f, atlas.findRegions("DeathLand"), Animation.PlayMode.LOOP);
+        deathLandAnim = new Animation<>(0.1f, atlas.findRegions("DeathLand"), Animation.PlayMode.NORMAL);
         stunRecoverAnim = new Animation<>(0.1f, atlas.findRegions("Stun Recover"), Animation.PlayMode.NORMAL);
         deathHitAnim = new Animation<>(0.1f, atlas.findRegions("DeathHit"), Animation.PlayMode.NORMAL);
     }

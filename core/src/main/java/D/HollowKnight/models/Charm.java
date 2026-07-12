@@ -7,4 +7,5 @@ public enum Charm {
     QUICK_SLASH,
     QUICK_FOCUS,
     HEAVY_BLOW,
+    VOID_HEART
 }

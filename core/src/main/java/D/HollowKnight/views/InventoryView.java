@@ -19,6 +19,7 @@ public class InventoryView {
     private TextureAtlas atlas;
     private OrthographicCamera uiCamera;
     private Texture backgroundTexture;
+    private Texture voidHeartTexture;
 
     public InventoryView(Player player) {
         this.player = player;
@@ -32,6 +33,7 @@ public class InventoryView {
         font.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
 
         atlas = new TextureAtlas(Gdx.files.internal("knight_animations.atlas"));
+        voidHeartTexture = new Texture("Void Heart - charm_black.png");
 
         uiCamera = new OrthographicCamera();
         uiCamera.setToOrtho(false, 1280, 720);
@@ -61,22 +63,34 @@ public class InventoryView {
         int index = 0;
 
         for (Charm charm : Charm.values()) {
+            if (charm.name().equals("VOID_HEART") && !player.hasFoundVoidHeart) {
+                continue;
+            }
             boolean isEquipped = player.hasCharm(charm);
 
             float x = startX + (index % 4) * spacingX;
             float y = startY - (index / 4) * spacingY;
 
-            String regionName = getCharmRegionName(charm);
-            TextureRegion region = atlas.findRegion(regionName);
-
-            if (region != null) {
+            if (charm.name().equals("VOID_HEART")) {
                 if (isEquipped) {
                     batch.setColor(Color.WHITE);
                 } else {
                     batch.setColor(0.3f, 0.3f, 0.3f, 1f);
                 }
-                batch.draw(region, x + 30, y, 100, 100);
+                batch.draw(voidHeartTexture, x + 30, y, 100, 100);
                 batch.setColor(Color.WHITE);
+            } else {
+                String regionName = getCharmRegionName(charm);
+                TextureRegion region = atlas.findRegion(regionName);
+                if (region != null) {
+                    if (isEquipped) {
+                        batch.setColor(Color.WHITE);
+                    } else {
+                        batch.setColor(0.3f, 0.3f, 0.3f, 1f);
+                    }
+                    batch.draw(region, x + 30, y, 100, 100);
+                    batch.setColor(Color.WHITE);
+                }
             }
 
             font.getData().setScale(1.1f);
@@ -106,6 +120,7 @@ public class InventoryView {
             case QUICK_SLASH: return "Quick Slash";
             case QUICK_FOCUS: return "Quick Focus";
             case HEAVY_BLOW: return "Heavy Blow";
+            case VOID_HEART: return "Void Heart";
             default: return charm.name();
         }
     }
@@ -118,6 +133,7 @@ public class InventoryView {
             case QUICK_SLASH: return "Increases striking\nspeed with the Nail.";
             case QUICK_FOCUS: return "Increases the speed\nof focusing Soul.";
             case HEAVY_BLOW: return "Increases knockback\nforce of Nail strikes.";
+            case VOID_HEART: return "Unifies the void.";
             default: return "";
         }
     }
@@ -159,5 +175,6 @@ public class InventoryView {
         if (font != null) font.dispose();
         if (atlas != null) atlas.dispose();
         if (backgroundTexture != null) backgroundTexture.dispose();
+        if (voidHeartTexture != null) voidHeartTexture.dispose();
     }
 }

@@ -84,6 +84,7 @@ public class Player {
     private boolean isChargingSoundPlaying = false;
     public Set<Charm> equippedCharms = new HashSet<>();
     public final int MAX_NOTCHES = 3;
+    public boolean hasFoundVoidHeart;
 
     public Player(float startX, float startY, World world , MapController mapController) {
         currentState = State.IDLE;

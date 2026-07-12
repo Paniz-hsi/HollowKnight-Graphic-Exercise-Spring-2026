@@ -7,6 +7,7 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
@@ -59,6 +60,7 @@ public class MapController implements Screen {
     private ZoteView zoteView;
     private FalseKnight falseKnight;
     private FalseKnightView falseKnightView;
+    private Texture voidHeartTex;
     private MenuController menuController;
     private GameUI gameUI;
     private boolean isPaused = false;
@@ -155,6 +157,7 @@ public class MapController implements Screen {
             pauseMenuView = new PauseMenuView(this, mainGame, menuController, style);
             gameUI = new GameUI(mainGame , menuController , style);
             gameUI.setZote(zote);
+            voidHeartTex = new Texture("Void Heart - charm_black.png");
         } else {
             System.err.println("Error: File not found " + mapPath);
         }
@@ -254,6 +257,15 @@ public class MapController implements Screen {
                     }
                 }
             }
+
+            if (player != null && !player.hasFoundVoidHeart && model.getVoidHeartSpawn() != null) {
+                float dist = Vector2.dst(player.getX(), player.getY(), model.getVoidHeartSpawn().x, model.getVoidHeartSpawn().y);
+                if (dist < 0.3f) {
+                    player.hasFoundVoidHeart = true;
+                    System.out.println("Void Heart Collected!");
+                }
+            }
+
             if (Gdx.input.isKeyPressed(com.badlogic.gdx.Input.Keys.CONTROL_LEFT)) {
 
                 if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.T)) {
@@ -325,12 +337,12 @@ public class MapController implements Screen {
             defaultCameraX = player.getX();
             defaultCameraY = player.getY();
 
-            if (player.getCurrentSpawnPointId() == 5) {
+            if (player.getCurrentSpawnPointId() == 5 && mapPath.contains("crossroad")) {
                 float roomLeft = 67f / MapModel.PPM;
                 float roomRight = 4541f / MapModel.PPM;
 
-                float roomBottom = 1818f / MapModel.PPM;
-                float roomTop = 5000 / MapModel.PPM;
+                float roomBottom = 2500f / MapModel.PPM;
+                float roomTop = 5800f / MapModel.PPM;
 
                 float halfCamWidth = 4.0f / 2f;
                 float halfCamHeight = 2.08f / 2f;
@@ -388,6 +400,9 @@ public class MapController implements Screen {
                 falseKnightView.render(batch, falseKnight, falseKnight.stateTimer);
             }
             playerView.render(batch, player);
+            if (!player.hasFoundVoidHeart && model.getVoidHeartSpawn() != null && voidHeartTex != null) {
+                batch.draw(voidHeartTex, model.getVoidHeartSpawn().x - 0.15f, model.getVoidHeartSpawn().y - 0.15f, 0.3f, 0.3f);
+            }
             batch.end();
         }
 
@@ -440,6 +455,7 @@ public class MapController implements Screen {
         if (zoteView != null) zoteView.dispose();
         if (beeParticles != null) beeParticles.dispose();
         if (falseKnightView != null) falseKnightView.dispose();
+        if (voidHeartTex != null) voidHeartTex.dispose();
     }
 
     public void pauseGame() {

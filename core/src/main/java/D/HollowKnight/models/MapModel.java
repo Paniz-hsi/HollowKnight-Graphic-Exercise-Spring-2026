@@ -22,6 +22,7 @@ public class MapModel {
     private Vector2 crystallizedSpawn;
     private Vector2 falseKnightSpawn;
     private Vector2 zoteSpawn;
+    private Vector2 voidHeartSpawn;
     private Array<BossDoor> bossDoors = new Array<>();
     public Array<BossDoor> getBossDoors() { return bossDoors; }
     public Array<BreakableWall> breakableWalls = new Array<>();
@@ -131,6 +132,11 @@ public class MapModel {
                 if (object.getName() != null && object.getName().equalsIgnoreCase("zote")) {
                     zoteSpawn = new Vector2(rawX / PPM, rawY / PPM);
                     System.out.println("Zote spawn loaded at X:" + zoteSpawn.x + " Y:" + zoteSpawn.y);
+                    continue;
+                }
+                if (object.getName() != null && object.getName().equalsIgnoreCase("voidHeart")) {
+                    voidHeartSpawn = new Vector2(rawX / PPM, rawY / PPM);
+                    System.out.println("Void Heart spawn loaded at X:" + voidHeartSpawn.x + " Y:" + voidHeartSpawn.y);
                     continue;
                 }
 
@@ -271,5 +277,9 @@ public class MapModel {
                 }
             }
         }
+    }
+
+    public Vector2 getVoidHeartSpawn() {
+        return voidHeartSpawn;
     }
 }

@@ -150,6 +150,7 @@ public class MainMenuView implements Screen {
         settingsBtn.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                settingsTable.setVisible(true);
                 mainTable.addAction(Actions.moveTo(-1280, 0, 0.75f, Interpolation.exp10Out));
                 settingsTable.addAction(Actions.moveTo(0, 0, 0.75f, Interpolation.exp10Out));
                 settingsBg.addAction(Actions.fadeIn(0.4f));
