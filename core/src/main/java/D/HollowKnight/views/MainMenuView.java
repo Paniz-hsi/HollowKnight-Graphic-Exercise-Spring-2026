@@ -36,17 +36,42 @@ public class MainMenuView implements Screen {
 
     private Image mainBg;
     private Image settingsBg;
+    private Texture[] mainBackgrounds;
+    private Texture[] subBackgrounds;
+    private int currentBgIndex = 0;
 
     public MainMenuView(GameController mainGame) {
         this.mainGame = mainGame;
         stage = new Stage(new FitViewport(1280, 720));
         Gdx.input.setInputProcessor(stage);
 
-        background = new Texture("backgroundmain.png");
+        /*background = new Texture("backgroundmain.png");
         mainBg = new Image(background);
         mainBg.setFillParent(true);
 
         settingsBg = new Image(new Texture("setback.png"));
+        settingsBg.setFillParent(true);
+        settingsBg.getColor().a = 0f;
+
+        stage.addActor(mainBg);
+        stage.addActor(settingsBg);*/
+
+        // لود کردن زوج‌های پس‌زمینه (مثلاً ۳ تم مختلف)
+        mainBackgrounds = new Texture[] {
+            new Texture("backgroundmain.png"),
+            new Texture("backgroundmain_theme2.png")
+        };
+
+        subBackgrounds = new Texture[] {
+            new Texture("setback.png"),
+            new Texture("setback_theme2.png")
+        };
+
+        background = mainBackgrounds[0];
+        mainBg = new Image(mainBackgrounds[currentBgIndex]);
+        mainBg.setFillParent(true);
+
+        settingsBg = new Image(subBackgrounds[currentBgIndex]);
         settingsBg.setFillParent(true);
         settingsBg.getColor().a = 0f;
 
@@ -103,6 +128,24 @@ public class MainMenuView implements Screen {
 
         MapSelectionTable mapSelectionTable = new MapSelectionTable(style, startGameTable, controller);
         startGameTable.setMapSelectionTable(mapSelectionTable);
+
+        TextButton changeBgBtn = new TextButton("CHANGE THEME", style);
+        mainTable.add(changeBgBtn).padBottom(15).padLeft(45).row();
+
+        changeBgBtn.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                currentBgIndex = (currentBgIndex + 1) % mainBackgrounds.length;
+
+                mainBg.setDrawable(new com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable(
+                    new com.badlogic.gdx.graphics.g2d.TextureRegion(mainBackgrounds[currentBgIndex])
+                ));
+
+                settingsBg.setDrawable(new com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable(
+                    new com.badlogic.gdx.graphics.g2d.TextureRegion(subBackgrounds[currentBgIndex])
+                ));
+            }
+        });
 
         settingsBtn.addListener(new ClickListener() {
             @Override
@@ -167,7 +210,11 @@ public class MainMenuView implements Screen {
     }
 
     @Override public void resize(int w, int h) { stage.getViewport().update(w, h, true); }
-    @Override public void dispose() { stage.dispose(); background.dispose(); font.dispose(); }
+    @Override public void dispose() {
+        stage.dispose();
+        font.dispose();
+        for (Texture t : mainBackgrounds) t.dispose();
+        for (Texture t : subBackgrounds) t.dispose(); }
     @Override public void show() {} @Override public void hide() {stage.getRoot().clear();}
     @Override public void pause() {} @Override public void resume() {}
 }

@@ -1,3 +1,4 @@
+
 package D.HollowKnight.views;
 
 import D.HollowKnight.controllers.MenuController;
@@ -17,32 +18,53 @@ public class ControlsTable extends Table {
     private TextButton downBtn;
     private TextButton leftBtn;
     private TextButton rightBtn;
+    private TextButton dashBtn;
+    private TextButton attackBtn;
+    private TextButton jumpBtn;
+
     private MenuController controller;
 
     public ControlsTable(TextButton.TextButtonStyle btnStyle, Table settingsTable, MenuController controller) {
         this.controller = controller;
         this.setFillParent(true);
-        this.center().padTop(100);
+        this.center().padTop(50);
         this.setPosition(1280, 0);
 
         Label.LabelStyle labelStyle = new Label.LabelStyle(btnStyle.font, Color.WHITE);
 
-         upBtn = createKeyBindButton(controller.getKeyUp(), btnStyle, controller, "up");
-         downBtn = createKeyBindButton(controller.getKeyDown(), btnStyle, controller, "down");
-         leftBtn = createKeyBindButton(controller.getKeyLeft(), btnStyle, controller, "left");
+        upBtn = createKeyBindButton(controller.getKeyUp(), btnStyle, controller, "up");
+        downBtn = createKeyBindButton(controller.getKeyDown(), btnStyle, controller, "down");
+        leftBtn = createKeyBindButton(controller.getKeyLeft(), btnStyle, controller, "left");
         rightBtn = createKeyBindButton(controller.getKeyRight(), btnStyle, controller, "right");
+
+        dashBtn = createKeyBindButton(controller.getKeyDash(), btnStyle, controller, "dash");
+        attackBtn = createKeyBindButton(controller.getKeyAttack(), btnStyle, controller, "attack");
+        jumpBtn = createKeyBindButton(controller.getKeyJump(), btnStyle, controller, "jump");
 
         TextButton backBtn = new TextButton("BACK", btnStyle);
 
         this.add(new Label("MOVE UP:", labelStyle)).padRight(30).padBottom(15);
         this.add(upBtn).width(150).padBottom(15).row();
+
         this.add(new Label("MOVE DOWN:", labelStyle)).padRight(30).padBottom(15);
         this.add(downBtn).width(150).padBottom(15).row();
+
         this.add(new Label("MOVE LEFT:", labelStyle)).padRight(30).padBottom(15);
         this.add(leftBtn).width(150).padBottom(15).row();
-        this.add(new Label("MOVE RIGHT:", labelStyle)).padRight(30).padBottom(30);
-        this.add(rightBtn).width(150).padBottom(30).row();
-        this.add(backBtn).colspan(2).padTop(20);
+
+        this.add(new Label("MOVE RIGHT:", labelStyle)).padRight(30).padBottom(15);
+        this.add(rightBtn).width(150).padBottom(15).row();
+
+        this.add(new Label("DASH:", labelStyle)).padRight(30).padBottom(15);
+        this.add(dashBtn).width(150).padBottom(15).row();
+
+        this.add(new Label("ATTACK:", labelStyle)).padRight(30).padBottom(15);
+        this.add(attackBtn).width(150).padBottom(15).row();
+
+        this.add(new Label("JUMP:", labelStyle)).padRight(30).padBottom(30);
+        this.add(jumpBtn).width(150).padBottom(30).row();
+
+        this.add(backBtn).colspan(2).padTop(10);
 
         backBtn.addListener(new ClickListener() {
             @Override
@@ -58,6 +80,10 @@ public class ControlsTable extends Table {
         downBtn.setText(Input.Keys.toString(controller.getKeyDown()));
         leftBtn.setText(Input.Keys.toString(controller.getKeyLeft()));
         rightBtn.setText(Input.Keys.toString(controller.getKeyRight()));
+
+        dashBtn.setText(Input.Keys.toString(controller.getKeyDash()));
+        attackBtn.setText(Input.Keys.toString(controller.getKeyAttack()));
+        jumpBtn.setText(Input.Keys.toString(controller.getKeyJump()));
     }
 
     private TextButton createKeyBindButton(int currentKeycode, TextButton.TextButtonStyle btnStyle, MenuController controller, String actionId) {
@@ -83,11 +109,15 @@ public class ControlsTable extends Table {
                     btn.setText(Input.Keys.toString(keycode));
                     getStage().setKeyboardFocus(null);
 
+                    // اتصال Action ID ها به متدهای دیتابیس
                     switch (actionId) {
                         case "up": controller.setKeyUp(keycode); break;
                         case "down": controller.setKeyDown(keycode); break;
                         case "left": controller.setKeyLeft(keycode); break;
                         case "right": controller.setKeyRight(keycode); break;
+                        case "dash": controller.setKeyDash(keycode); break;
+                        case "attack": controller.setKeyAttack(keycode); break;
+                        case "jump": controller.setKeyJump(keycode); break;
                     }
                     return true;
                 }
